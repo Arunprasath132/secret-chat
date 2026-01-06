@@ -3,48 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecretChat | Secure Bridge</title>
+    <title>SecretChat | Private Bridge</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="http://10.29.200.41:3000/socket.io/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         body { background-color: #020617; color: #e2e8f0; font-family: sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .hidden { display: none !important; }
-        #messages::-webkit-scrollbar { width: 4px; }
-        #messages::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body class="p-4">
 
-    <div id="loginSection" class="glass w-full max-w-md p-8 rounded-3xl shadow-2xl">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold tracking-tighter text-blue-500">SECRET CHAT</h1>
-            <p class="text-slate-400 text-sm mt-2 font-mono">IP: 10.29.200.41</p>
-        </div>
+    <div id="loginSection" class="glass w-full max-w-md p-8 rounded-3xl shadow-2xl text-center">
+        <h1 class="text-3xl font-bold tracking-tighter text-blue-500 mb-2">SECRET CHAT</h1>
+        <p class="text-slate-400 text-sm mb-8 italic">No database. No history. Pure memory.</p>
+        
         <div class="space-y-4">
-            <input type="text" id="secretKey" placeholder="Enter Shared Secret Key" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none font-mono">
-            <button onclick="connectToChat()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold transition-transform active:scale-95">Establish Bridge</button>
+            <input type="text" id="secretKey" placeholder="Enter Shared Secret Key" 
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+            <button onclick="connectToChat()" 
+                class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold transition-transform active:scale-95">
+                Establish Bridge
+            </button>
         </div>
     </div>
 
     <div id="chatSection" class="hidden glass w-full max-w-2xl h-[90vh] flex flex-col rounded-3xl overflow-hidden shadow-2xl">
         <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-            <span class="text-xs font-mono text-green-500">● SECURE LINE ACTIVE</span>
+            <span id="status" class="text-[10px] font-mono text-yellow-500 tracking-widest uppercase">Connecting...</span>
             <button onclick="terminate()" class="text-xs bg-red-500/10 text-red-500 border border-red-500/50 px-3 py-1 rounded-full hover:bg-red-500 hover:text-white transition-all">Wipe Session</button>
         </div>
+        
         <div id="messages" class="flex-1 p-6 overflow-y-auto space-y-4 flex flex-col"></div>
+
         <div class="p-4 bg-slate-900/80 border-t border-slate-700">
-            <form id="msgForm" onsubmit="event.preventDefault(); sendMessage();" class="flex space-x-2">
-                <input type="text" id="msgInput" autocomplete="off" placeholder="Type secret message..." class="flex-1 bg-slate-800 border border-slate-700 rounded-full px-5 py-3 focus:outline-none text-sm">
-                <button class="bg-blue-600 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rotate-90" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+            <form onsubmit="event.preventDefault(); sendMessage();" class="flex space-x-2">
+                <input type="text" id="msgInput" autocomplete="off" placeholder="Type a message..." 
+                    class="flex-1 bg-slate-800 border border-slate-700 rounded-full px-5 py-3 focus:outline-none text-sm">
+                <button class="bg-blue-600 p-3 rounded-full shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rotate-90" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
             </form>
         </div>
     </div>
 
     <script>
-        // Manually point to your server IP
-        const socket = io('http://10.29.200.41:3000');
+        // Automatic connection to the current host
+        const socket = io();
         let currentRoom = "";
+
+        socket.on('connect', () => {
+            document.getElementById('status').innerText = "● Secure Line Active";
+            document.getElementById('status').classList.replace('text-yellow-500', 'text-green-500');
+        });
 
         function connectToChat() {
             const key = document.getElementById('secretKey').value;
@@ -69,7 +80,7 @@
         });
 
         socket.on('force-logout', () => {
-            alert("Partner ended session. All data destroyed.");
+            alert("Partner ended session. Data cleared.");
             location.reload();
         });
 
@@ -83,7 +94,7 @@
         }
 
         function terminate() {
-            if(confirm("Destroy this chat for both users?")) {
+            if(confirm("Destroy this chat for everyone?")) {
                 socket.emit('end-session', currentRoom);
             }
         }
