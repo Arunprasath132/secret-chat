@@ -3,98 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecretChat | Private Bridge</title>
+    <title>Secret Bridge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/socket.io/socket.io.js"></script>
     <style>
-        body { background-color: #020617; color: #e2e8f0; font-family: sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+        body { background-color: #020617; color: #e2e8f0; font-family: sans-serif; height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .hidden { display: none !important; }
+        #messages::-webkit-scrollbar { width: 4px; }
+        #messages::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-2">
 
-    <div id="loginSection" class="glass w-full max-w-md p-8 rounded-3xl shadow-2xl text-center">
-        <h1 class="text-3xl font-bold tracking-tighter text-blue-500 mb-2">SECRET CHAT</h1>
-        <p class="text-slate-400 text-sm mb-8 italic">No database. No history. Pure memory.</p>
-        
-        <div class="space-y-4">
-            <input type="text" id="secretKey" placeholder="Enter Shared Secret Key" 
-                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none font-mono">
-            <button onclick="connectToChat()" 
-                class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold transition-transform active:scale-95">
-                Establish Bridge
-            </button>
-        </div>
+    <div id="loginSection" class="glass w-full max-w-md p-8 rounded-3xl shadow-2xl">
+        <h1 class="text-2xl font-bold text-blue-500 text-center mb-6">SECURE BRIDGE</h1>
+        <input type="text" id="secretKey" placeholder="Enter Secret Key (e.g. 123)" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 mb-4 focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+        <button onclick="connectToChat()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold transition-active active:scale-95">Open Connection</button>
     </div>
 
     <div id="chatSection" class="hidden glass w-full max-w-2xl h-[90vh] flex flex-col rounded-3xl overflow-hidden shadow-2xl">
         <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-            <span id="status" class="text-[10px] font-mono text-yellow-500 tracking-widest uppercase">Connecting...</span>
-            <button onclick="terminate()" class="text-xs bg-red-500/10 text-red-500 border border-red-500/50 px-3 py-1 rounded-full hover:bg-red-500 hover:text-white transition-all">Wipe Session</button>
+            <div>
+                <div id="status" class="text-[10px] font-mono text-green-500 tracking-widest uppercase">● Online</div>
+                <div id="userCount" class="text-[9px] text-slate-400">1 Member Connected</div>
+            </div>
+            <button onclick="terminate()" class="text-xs bg-red-500/10 text-red-500 border border-red-500/50 px-3 py-1 rounded-full hover:bg-red-500 hover:text-white transition-all">Wipe Everything</button>
         </div>
-        
+
         <div id="messages" class="flex-1 p-6 overflow-y-auto space-y-4 flex flex-col"></div>
+
+        <div id="typingArea" class="px-6 py-1 text-[10px] text-blue-400 italic h-4"></div>
 
         <div class="p-4 bg-slate-900/80 border-t border-slate-700">
             <form onsubmit="event.preventDefault(); sendMessage();" class="flex space-x-2">
-                <input type="text" id="msgInput" autocomplete="off" placeholder="Type a message..." 
-                    class="flex-1 bg-slate-800 border border-slate-700 rounded-full px-5 py-3 focus:outline-none text-sm">
-                <button class="bg-blue-600 p-3 rounded-full shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rotate-90" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                </button>
+                <input type="text" id="msgInput" autocomplete="off" placeholder="Message..." class="flex-1 bg-slate-800 border border-slate-700 rounded-full px-5 py-3 focus:outline-none text-sm">
+                <button class="bg-blue-600 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rotate-90" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
             </form>
         </div>
     </div>
 
     <script>
-        // Automatic connection to the current host
         const socket = io();
         let currentRoom = "";
-
-        socket.on('connect', () => {
-            document.getElementById('status').innerText = "● Secure Line Active";
-            document.getElementById('status').classList.replace('text-yellow-500', 'text-green-500');
-        });
+        let typingTimeout;
 
         function connectToChat() {
             const key = document.getElementById('secretKey').value;
-            if (key) {
-                currentRoom = key;
-                socket.emit('join-room', key);
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('chatSection').classList.remove('hidden');
-            }
+            if (!key) return;
+            currentRoom = key;
+            socket.emit('join-room', key);
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('chatSection').classList.remove('hidden');
+
+            // LOAD HISTORY FROM PHONE MEMORY
+            const saved = JSON.parse(localStorage.getItem('chat_' + key) || "[]");
+            saved.forEach(m => appendToScreen(m.text, m.sender, m.time));
         }
 
         function sendMessage() {
             const input = document.getElementById('msgInput');
             if (!input.value) return;
-            appendMessage(input.value, 'me');
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Save & Show locally
+            saveAndShow(input.value, 'me', time);
             socket.emit('send-message', { room: currentRoom, message: input.value });
+            
             input.value = "";
+            socket.emit('typing', { room: currentRoom, isTyping: false });
         }
 
-        socket.on('receive-message', (msg) => {
-            appendMessage(msg, 'them');
+        socket.on('receive-message', (data) => {
+            saveAndShow(data.text, 'them', data.time);
         });
 
-        socket.on('force-logout', () => {
-            alert("Partner ended session. Data cleared.");
-            location.reload();
-        });
+        function saveAndShow(text, sender, time) {
+            appendToScreen(text, sender, time);
+            // Save to LocalStorage
+            const history = JSON.parse(localStorage.getItem('chat_' + currentRoom) || "[]");
+            history.push({ text, sender, time });
+            localStorage.setItem('chat_' + currentRoom, JSON.stringify(history));
+        }
 
-        function appendMessage(text, sender) {
+        function appendToScreen(text, sender, time) {
             const container = document.getElementById('messages');
             const wrapper = document.createElement('div');
             wrapper.className = `flex ${sender === 'me' ? 'justify-end' : 'justify-start'}`;
-            wrapper.innerHTML = `<div class="${sender === 'me' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-100'} px-4 py-2 rounded-2xl max-w-[85%] text-sm shadow-md">${text}</div>`;
+            wrapper.innerHTML = `
+                <div class="${sender === 'me' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-100'} px-4 py-2 rounded-2xl max-w-[85%] text-sm shadow-md">
+                    ${text}
+                    <span class="text-[8px] opacity-40 block mt-1 text-right">${time}</span>
+                </div>`;
             container.appendChild(wrapper);
             container.scrollTop = container.scrollHeight;
         }
 
+        // TYPING INDICATOR
+        document.getElementById('msgInput').addEventListener('input', () => {
+            socket.emit('typing', { room: currentRoom, isTyping: true });
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                socket.emit('typing', { room: currentRoom, isTyping: false });
+            }, 2000);
+        });
+
+        socket.on('display-typing', (isTyping) => {
+            document.getElementById('typingArea').innerText = isTyping ? "Someone is typing..." : "";
+        });
+
+        // CONNECTION UPDATES
+        socket.on('user-update', (data) => {
+            document.getElementById('userCount').innerText = `${data.count} Member(s) Connected`;
+        });
+
+        socket.on('force-logout', () => {
+            localStorage.removeItem('chat_' + currentRoom);
+            alert("Session Wiped.");
+            location.reload();
+        });
+
         function terminate() {
-            if(confirm("Destroy this chat for everyone?")) {
+            if(confirm("Wipe all history for this key?")) {
                 socket.emit('end-session', currentRoom);
             }
         }
