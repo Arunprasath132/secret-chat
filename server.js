@@ -7,19 +7,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-
 let roomMessages = {}; 
+let roomPasswords = {}; 
 
 app.use(express.static(__dirname));
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
 io.on('connection', (socket) => {
-    console.log('New connection established');
-
-    
+    // PREVIEW LOGIC
     socket.on('get-preview', (key) => {
         if (roomMessages[key] && roomMessages[key].length > 0) {
             const lastMsg = roomMessages[key][roomMessages[key].length - 1];
@@ -29,46 +23,50 @@ io.on('connection', (socket) => {
         }
     });
 
-    
-    socket.on('join-room', (key) => {
-        socket.join(key);
-        socket.currentRoom = key;
+    // PASSWORD PROTECTED JOIN
+    socket.on('join-room', (data) => {
+        const { key, password } = data;
 
-        
-        if (roomMessages[key]) {
-            socket.emit('load-history', roomMessages[key]);
+        // Create password if room is new
+        if (!roomPasswords[key]) {
+            roomPasswords[key] = password;
         }
 
-        const roomSize = io.sockets.adapter.rooms.get(key)?.size || 0;
-        io.to(key).emit('user-update', { count: roomSize, event: 'joined' });
+        // Validate Password
+        if (roomPasswords[key] === password) {
+            socket.join(key);
+            socket.currentRoom = key;
+
+            if (roomMessages[key]) {
+                socket.emit('load-history', roomMessages[key]);
+            }
+
+            const roomSize = io.sockets.adapter.rooms.get(key)?.size || 0;
+            io.to(key).emit('user-update', { count: roomSize, event: 'joined' });
+            socket.emit('login-success');
+        } else {
+            socket.emit('login-error', "Invalid Password for this Bridge.");
+        }
     });
 
-    
     socket.on('send-message', (data) => {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const newMessage = { 
-            text: data.message, 
-            time: time, 
-            senderId: socket.id 
-        };
+        const newMessage = { text: data.message, time: time, senderId: socket.id };
 
         if (!roomMessages[data.room]) roomMessages[data.room] = [];
         roomMessages[data.room].push(newMessage);
-        
-        // Limit to 50 messages per room to save memory
         if (roomMessages[data.room].length > 50) roomMessages[data.room].shift();
 
         io.to(data.room).emit('receive-message', newMessage);
     });
 
-    
     socket.on('typing', (data) => {
         socket.to(data.room).emit('display-typing', data.isTyping);
     });
 
-    
     socket.on('end-session', (room) => {
         delete roomMessages[room];
+        delete roomPasswords[room];
         io.to(room).emit('force-logout');
     });
 
@@ -82,4 +80,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, '0.0.0.0', () => console.log(`Secure Server on ${PORT}`));
