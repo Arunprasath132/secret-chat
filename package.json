@@ -1,7 +1,7 @@
 {
-  "name": "secret-chat-app",
-  "version": "1.0.0",
-  "description": "Private session-based chat",
+  "name": "secret-bridge-pro",
+  "version": "1.5.0",
+  "description": "Secure persistent chat with preview and history",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
