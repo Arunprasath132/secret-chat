@@ -3,53 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Secret Bridge</title>
+    <title>Secret Bridge Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         :root { --vh: 1vh; }
         body { background-color: #020617; color: #e2e8f0; height: calc(var(--vh) * 100); margin: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: sans-serif; }
-        .glass { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .hidden { display: none !important; }
         #messages { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        .msg-bubble { word-wrap: break-word; overflow-wrap: break-word; max-width: 85%; }
+        .input-style { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 1rem; width: 100%; outline: none; transition: border 0.3s; }
+        .input-style:focus { border-color: #3b82f6; }
     </style>
 </head>
-<body class="p-2 sm:p-4">
+<body class="p-3">
 
-    <div id="loginSection" class="glass w-full max-w-md p-6 sm:p-8 rounded-3xl shadow-2xl">
-        <h1 class="text-2xl font-bold text-blue-500 text-center mb-1 tracking-tighter">SECRET BRIDGE</h1>
-        <p class="text-[10px] text-slate-500 text-center mb-6 uppercase tracking-[0.2em]">End-to-End Tunnel</p>
+    <div id="loginSection" class="glass w-full max-w-sm p-8 rounded-[2rem] shadow-2xl">
+        <h1 class="text-2xl font-black text-blue-500 text-center mb-1 tracking-tighter">SECURE BRIDGE</h1>
+        <p class="text-[9px] text-slate-500 text-center mb-6 uppercase tracking-[0.3em]">Encrypted Session</p>
         
-        <div id="previewBox" class="mb-4 p-4 bg-slate-900/80 border border-slate-800 rounded-2xl hidden transition-all">
-            <p class="text-[10px] text-blue-400 font-bold uppercase mb-1">Last Active Message</p>
-            <p id="previewText" class="text-xs text-slate-300 italic">Checking...</p>
-            <span id="previewTime" class="text-[8px] text-slate-500"></span>
+        <div id="previewBox" class="mb-4 p-3 bg-blue-500/5 rounded-xl border border-blue-500/10 hidden">
+            <p class="text-[9px] text-blue-400 font-bold uppercase mb-1">Recent Activity</p>
+            <p id="previewText" class="text-xs text-slate-400 italic truncate">...</p>
         </div>
 
-        <input type="text" id="secretKey" placeholder="Enter Secret Key" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 mb-4 focus:ring-2 focus:ring-blue-500 outline-none font-mono text-center">
-        <button onclick="connectToChat()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold active:scale-95 transition-transform uppercase tracking-widest text-sm">Join Bridge</button>
+        <div class="space-y-3">
+            <input type="text" id="secretKey" placeholder="Room ID" class="input-style text-center font-mono">
+            <input type="password" id="roomPass" placeholder="Password" class="input-style text-center font-mono">
+            <p id="errorMsg" class="text-red-500 text-[10px] text-center hidden"></p>
+            <button onclick="connectToChat()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold active:scale-95 transition-all uppercase text-xs tracking-widest shadow-lg shadow-blue-500/20">Unlock Bridge</button>
+        </div>
     </div>
 
-    <div id="chatSection" class="hidden glass w-full max-w-2xl h-full sm:h-[90vh] flex flex-col rounded-3xl overflow-hidden">
-        <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-            <div class="flex items-center space-x-2">
-                <div id="statusDot" class="w-2 h-2 rounded-full bg-yellow-500"></div>
+    <div id="chatSection" class="hidden glass w-full max-w-2xl h-full sm:h-[90vh] flex flex-col rounded-[2rem] overflow-hidden">
+        <div class="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+            <div class="flex items-center space-x-3">
+                <div id="statusDot" class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
                 <div>
-                    <div id="statusText" class="text-[10px] font-mono text-slate-400 uppercase font-bold tracking-widest">Connecting</div>
-                    <div id="userCount" class="text-[9px] text-slate-500">Syncing participants...</div>
+                    <div class="text-[10px] font-bold text-slate-200 uppercase tracking-tighter" id="headerRoomName">Bridge Active</div>
+                    <div id="userCount" class="text-[9px] text-slate-500">1 Member Connected</div>
                 </div>
             </div>
-            <button onclick="terminate()" class="text-[10px] bg-red-500/10 text-red-500 border border-red-500/50 px-3 py-1 rounded-full font-bold uppercase">Wipe All</button>
+            <button onclick="terminate()" class="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-1.5 rounded-full font-bold uppercase hover:bg-red-500 hover:text-white transition-all">Wipe</button>
         </div>
 
         <div id="messages" class="flex-1 p-4 overflow-y-auto space-y-4 flex flex-col"></div>
         <div id="typingArea" class="px-6 py-1 text-[10px] text-blue-400 italic h-5"></div>
 
-        <div class="p-4 bg-slate-900/90 border-t border-slate-700">
+        <div class="p-4 bg-black/20 border-t border-white/5">
             <form onsubmit="event.preventDefault(); sendMessage();" class="flex space-x-2">
-                <input type="text" id="msgInput" autocomplete="off" placeholder="Type a message..." class="flex-1 bg-slate-800 border border-slate-700 rounded-full px-5 py-3 focus:outline-none text-sm text-white">
-                <button type="submit" class="bg-blue-600 p-3 rounded-full w-12 h-12 flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                <input type="text" id="msgInput" autocomplete="off" placeholder="Write something..." class="flex-1 bg-slate-900 border border-white/5 rounded-full px-5 py-3 focus:outline-none text-sm text-white focus:border-blue-500/50">
+                <button type="submit" class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rotate-90" fill="white" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                 </button>
             </form>
@@ -61,18 +65,16 @@
         let currentRoom = "";
         let typingTimeout;
 
-        
         const setVh = () => { document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); };
         window.addEventListener('resize', setVh);
         setVh();
 
-        
-        const secretInput = document.getElementById('secretKey');
-        secretInput.addEventListener('input', () => {
-            const key = secretInput.value.trim();
-            if (key.length > 0) {
+        // 1. PREVIEW LOGIC
+        document.getElementById('secretKey').addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            if (val) {
                 document.getElementById('previewBox').classList.remove('hidden');
-                socket.emit('get-preview', key);
+                socket.emit('get-preview', val);
             } else {
                 document.getElementById('previewBox').classList.add('hidden');
             }
@@ -80,32 +82,34 @@
 
         socket.on('preview-response', (data) => {
             document.getElementById('previewText').innerText = data.text;
-            document.getElementById('previewTime').innerText = data.time;
         });
 
-        
-        socket.on('connect', () => {
-            document.getElementById('statusDot').classList.replace('bg-yellow-500', 'bg-green-500');
-            document.getElementById('statusText').innerText = "Bridge Active";
-            document.getElementById('statusText').classList.replace('text-slate-400', 'text-green-500');
-        });
-
+        // 2. AUTH LOGIC
         function connectToChat() {
-            const key = secretInput.value.trim();
-            if (!key) return;
+            const key = document.getElementById('secretKey').value.trim();
+            const pass = document.getElementById('roomPass').value.trim();
+            if (!key || !pass) return;
             currentRoom = key;
-            socket.emit('join-room', key);
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('chatSection').classList.remove('hidden');
+            socket.emit('join-room', { key: key, password: pass });
         }
 
-        
+        socket.on('login-success', () => {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('chatSection').classList.remove('hidden');
+            document.getElementById('headerRoomName').innerText = "Room: " + currentRoom;
+        });
+
+        socket.on('login-error', (msg) => {
+            const err = document.getElementById('errorMsg');
+            err.innerText = msg;
+            err.classList.remove('hidden');
+        });
+
+        // 3. CHAT LOGIC
         socket.on('load-history', (history) => {
             const container = document.getElementById('messages');
             container.innerHTML = "";
-            history.forEach(msg => {
-                appendToScreen(msg.text, msg.senderId === socket.id ? 'me' : 'them', msg.time);
-            });
+            history.forEach(msg => appendToScreen(msg.text, msg.senderId === socket.id ? 'me' : 'them', msg.time));
         });
 
         function sendMessage() {
@@ -125,39 +129,33 @@
             const wrapper = document.createElement('div');
             wrapper.className = `flex ${sender === 'me' ? 'justify-end' : 'justify-start'}`;
             wrapper.innerHTML = `
-                <div class="msg-bubble ${sender === 'me' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-700 text-slate-100 rounded-tl-none'} px-4 py-2 rounded-2xl shadow-lg mb-1">
-                    <p class="text-sm leading-relaxed">${text}</p>
+                <div class="${sender === 'me' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-200 rounded-tl-none'} px-4 py-2.5 rounded-2xl shadow-xl max-w-[85%] mb-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <p class="text-[13px] leading-relaxed">${text}</p>
                     <span class="text-[8px] opacity-40 block mt-1 text-right font-mono">${time}</span>
                 </div>`;
             container.appendChild(wrapper);
             container.scrollTop = container.scrollHeight;
         }
 
-        
+        // 4. INTERACTION LOGIC
         document.getElementById('msgInput').addEventListener('input', () => {
             socket.emit('typing', { room: currentRoom, isTyping: true });
             clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                socket.emit('typing', { room: currentRoom, isTyping: false });
-            }, 1500);
+            typingTimeout = setTimeout(() => socket.emit('typing', { room: currentRoom, isTyping: false }), 1500);
         });
 
         socket.on('display-typing', (isTyping) => {
-            document.getElementById('typingArea').innerText = isTyping ? "Someone is typing..." : "";
+            document.getElementById('typingArea').innerText = isTyping ? "Participant is typing..." : "";
         });
 
         socket.on('user-update', (data) => {
-            document.getElementById('userCount').innerText = `${data.count} Connected`;
+            document.getElementById('userCount').innerText = `${data.count} Member(s) Connected`;
         });
 
-    
-        socket.on('force-logout', () => {
-            alert("This bridge has been wiped by a participant.");
-            location.reload();
-        });
+        socket.on('force-logout', () => location.reload());
 
         function terminate() {
-            if(confirm("Permanently destroy this session for everyone?")) {
+            if(confirm("WIPE SESSION? This deletes all messages and the password.")) {
                 socket.emit('end-session', currentRoom);
             }
         }
