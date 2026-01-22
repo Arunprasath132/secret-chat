@@ -3,59 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Secret Bridge | Pro</title>
+    <title>Secret Bridge | Secure Transient Tunnel</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         :root { --vh: 1vh; }
-        body { background-color: #020617; color: #f8fafc; height: calc(var(--vh) * 100); margin: 0; overflow: hidden; font-family: sans-serif; }
+        body { background-color: #020617; color: #f8fafc; height: calc(var(--vh) * 100); margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
         .glass { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .hidden { display: none !important; }
         
-        /* Animations */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-ui { animation: fadeIn 0.4s ease-out forwards; }
         
         #messages::-webkit-scrollbar { width: 3px; }
         #messages::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        
+        .step-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 12px; }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <nav id="mainNav" class="fixed top-0 w-full p-5 flex justify-between items-center z-50 transition-all">
+    <nav id="mainNav" class="fixed top-0 w-full p-5 flex justify-between items-center z-50">
         <div class="flex items-center space-x-2">
             <div class="w-6 h-6 bg-blue-600 rounded flex items-center justify-center font-black text-[10px]">S</div>
-            <span class="text-[10px] font-black tracking-widest uppercase hidden sm:block">Secret Bridge</span>
+            <span class="text-[10px] font-black tracking-widest uppercase">Secret Bridge</span>
         </div>
         <div class="flex space-x-4">
-            <span class="text-[10px] font-bold text-slate-500 cursor-pointer hover:text-blue-500" onclick="location.reload()">HOME</span>
-            <span class="text-[10px] font-bold text-slate-500 cursor-pointer hover:text-blue-500" onclick="showLogin()">CONNECT</span>
+            <span class="text-[9px] font-bold text-slate-500 cursor-pointer hover:text-blue-500 uppercase" onclick="showLogin()">Connect</span>
         </div>
     </nav>
 
-    <main id="homeSection" class="flex-1 flex flex-col items-center justify-center p-6 text-center animate-ui">
-        <h1 class="text-4xl sm:text-6xl font-black tracking-tighter mb-4 leading-none">
-            Absolute <span class="text-blue-500">Privacy.</span>
-        </h1>
-        <p class="text-slate-400 text-sm max-w-xs mb-8">Volatile data tunnel. No logs. No history. Purely transient.</p>
-        <button onclick="showLogin()" class="px-10 py-4 bg-blue-600 rounded-2xl font-black text-[11px] uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-blue-500/20">
-            Establish Tunnel
-        </button>
+    <main id="homeSection" class="flex-1 flex flex-col items-center justify-center p-6 mt-10 overflow-y-auto animate-ui">
+        <div class="max-w-md w-full text-center space-y-6 pb-10">
+            <div>
+                <h1 class="text-4xl font-black tracking-tighter leading-none mb-4">
+                    Purely <span class="text-blue-500">Transient.</span>
+                </h1>
+                <p class="text-slate-400 text-xs leading-relaxed">
+                    Secret Bridge is a secure, ephemeral messaging portal. We don't use databases or permanent storage. Your conversations live in the "here and now"—existing only in volatile server memory until the bridge is destroyed.
+                </p>
+            </div>
+
+            <div class="text-left space-y-3">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500">How to Connect</h2>
+                <div class="grid grid-cols-1 gap-2">
+                    <div class="step-card flex items-start space-x-3">
+                        <span class="text-blue-500 font-black text-xs">01</span>
+                        <p class="text-[10px] text-slate-300">Create or enter a unique <span class="text-white font-bold">Bridge ID</span> (e.g., Alpha-Tunnel-99).</p>
+                    </div>
+                    <div class="step-card flex items-start space-x-3">
+                        <span class="text-blue-500 font-black text-xs">02</span>
+                        <p class="text-[10px] text-slate-300">Set a shared <span class="text-white font-bold">Password</span> and share it with your partner.</p>
+                    </div>
+                    <div class="step-card flex items-start space-x-3">
+                        <span class="text-blue-500 font-black text-xs">03</span>
+                        <p class="text-[10px] text-slate-300">Once connected, use the <span class="text-red-500 font-bold">Wipe</span> button to erase all traces instantly.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="showLogin()" class="w-full py-4 bg-blue-600 rounded-2xl font-black text-[11px] uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-blue-500/20">
+                Establish Tunnel
+            </button>
+        </div>
     </main>
 
     <div id="loginSection" class="hidden flex-1 flex items-center justify-center p-4 animate-ui">
         <div class="glass w-full max-w-sm p-6 sm:p-8 rounded-[2.5rem] shadow-2xl relative">
-            <button onclick="hideLogin()" class="absolute top-6 right-6 text-slate-500 text-[10px] font-bold">BACK</button>
-            <h2 class="text-center font-black uppercase text-sm tracking-widest mb-6">Security Check</h2>
+            <button onclick="hideLogin()" class="absolute top-6 right-6 text-slate-500 text-[10px] font-bold">CANCEL</button>
+            <h2 class="text-center font-black uppercase text-sm tracking-widest mb-6 text-blue-500">Node Authentication</h2>
             <div class="space-y-3">
-                <input type="text" id="secretKey" placeholder="BRIDGE ID" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-xs uppercase outline-none focus:border-blue-500">
-                <input type="password" id="roomPass" placeholder="PASSWORD" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-xs outline-none focus:border-blue-500">
+                <input type="text" id="secretKey" placeholder="UNIQUE BRIDGE ID" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-xs uppercase outline-none focus:border-blue-500">
+                <input type="password" id="roomPass" placeholder="ACCESS PASSWORD" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-xs outline-none focus:border-blue-500">
+                
                 <div class="flex items-start space-x-2 py-2">
                     <input type="checkbox" id="terms" class="mt-1 accent-blue-600">
-                    <label for="terms" class="text-[9px] text-slate-500 uppercase font-bold">I agree to the wipe protocol.</label>
+                    <label for="terms" class="text-[9px] text-slate-500 uppercase font-bold leading-tight">
+                        I acknowledge that wiping the bridge destroys data for all connected nodes.
+                    </label>
                 </div>
-                <button onclick="connectToChat()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xs uppercase tracking-widest">Connect</button>
+                
+                <button onclick="connectToChat()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xs uppercase tracking-widest">Authorize & Connect</button>
             </div>
         </div>
     </div>
@@ -63,21 +92,21 @@
     <div id="chatSection" class="hidden h-full flex flex-col animate-ui">
         <header class="p-4 sm:p-6 border-b border-white/5 flex items-center justify-between bg-black/20">
             <div class="flex items-center space-x-3 overflow-hidden">
-                <div class="w-2 h-2 rounded-full bg-green-500 shrink-0 shadow-[0_0_8px_#22c55e]"></div>
+                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div>
                 <div class="truncate">
-                    <h3 id="headerRoomName" class="text-[10px] font-black uppercase tracking-widest truncate text-slate-200">Tunnel</h3>
+                    <h3 id="headerRoomName" class="text-[10px] font-black uppercase tracking-widest truncate text-slate-200">Bridge Active</h3>
                     <p id="userCount" class="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">Nodes: 0</p>
                 </div>
             </div>
-            <button onclick="terminate()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-full text-[9px] font-black uppercase hover:bg-red-600 hover:text-white shrink-0">Wipe</button>
+            <button onclick="terminate()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-full text-[9px] font-black uppercase hover:bg-red-600 hover:text-white shrink-0">Wipe Tunnel</button>
         </header>
 
         <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
-        <div id="typingArea" class="px-6 py-1 text-[9px] text-blue-400 italic h-4 uppercase font-bold"></div>
+        <div id="typingArea" class="px-6 py-1 text-[8px] text-blue-400 italic h-4 uppercase font-bold tracking-widest"></div>
 
         <div class="p-4 bg-black/40">
             <form onsubmit="event.preventDefault(); sendMessage();" class="max-w-3xl mx-auto flex space-x-2">
-                <input type="text" id="msgInput" autocomplete="off" placeholder="Message..." class="flex-1 bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 focus:outline-none text-sm text-white">
+                <input type="text" id="msgInput" autocomplete="off" placeholder="Type a message..." class="flex-1 bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 focus:outline-none text-sm text-white focus:border-blue-500">
                 <button type="submit" class="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center shrink-0 active:scale-90 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rotate-90" fill="white" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                 </button>
@@ -89,13 +118,10 @@
         const socket = io();
         let currentRoom = "";
 
-        const setVh = () => { document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); };
-        window.addEventListener('resize', setVh);
-        setVh();
-
+        // UI Routing
         function showLogin() {
             document.getElementById('homeSection').classList.add('hidden');
-            document.getElementById('mainNav').classList.add('hidden'); // Fix overlap
+            document.getElementById('mainNav').classList.add('hidden');
             document.getElementById('loginSection').classList.remove('hidden');
         }
 
@@ -108,7 +134,7 @@
         function connectToChat() {
             const key = document.getElementById('secretKey').value.trim();
             const pass = document.getElementById('roomPass').value.trim();
-            if (!document.getElementById('terms').checked) return alert("Accept Protocol.");
+            if (!document.getElementById('terms').checked) return alert("Please agree to the security protocol.");
             if (!key || !pass) return;
             currentRoom = key;
             socket.emit('join-room', { key: key, password: pass });
@@ -116,11 +142,12 @@
 
         socket.on('login-success', () => {
             document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('mainNav').classList.add('hidden'); // Ensure Nav is gone
+            document.getElementById('mainNav').classList.add('hidden');
             document.getElementById('chatSection').classList.remove('hidden');
             document.getElementById('headerRoomName').innerText = "ID: " + currentRoom;
         });
 
+        // Chat Logic
         function sendMessage() {
             const input = document.getElementById('msgInput');
             if (!input.value.trim()) return;
@@ -133,7 +160,7 @@
             const wrapper = document.createElement('div');
             if (data.type === 'system') {
                 wrapper.className = "flex justify-center my-4";
-                wrapper.innerHTML = `<div class="bg-blue-500/5 border border-blue-500/10 text-blue-400 text-[8px] px-4 py-1.5 rounded-full font-bold uppercase tracking-widest italic">${data.text}</div>`;
+                wrapper.innerHTML = `<div class="bg-blue-500/5 border border-blue-500/10 text-blue-400 text-[8px] px-4 py-1.5 rounded-full font-bold uppercase tracking-widest italic text-center animate-ui">${data.text}</div>`;
             } else {
                 const isMe = data.senderId === socket.id;
                 wrapper.className = `flex ${isMe ? 'justify-end' : 'justify-start'}`;
@@ -150,7 +177,9 @@
         socket.on('force-logout', () => location.reload());
 
         function terminate() {
-            if(confirm("WIPE EVERYTHING?")) socket.emit('end-session', currentRoom);
+            if(confirm("DANGER: This will wipe the bridge and all history for all users. Continue?")) {
+                socket.emit('end-session', currentRoom);
+            }
         }
     </script>
 </body>
