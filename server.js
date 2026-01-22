@@ -6,6 +6,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Volatile Storage
 let roomMessages = {}; 
 let roomPasswords = {}; 
 
@@ -22,21 +23,26 @@ io.on('connection', (socket) => {
         if (roomPasswords[key] === password) {
             socket.join(key);
             socket.currentRoom = key;
-            // Send history so late-comers see previous messages
+            
+            // Sync history for the user joining
             socket.emit('load-history', roomMessages[key]);
 
-            const time = new Date().toLocaleTimeString();
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             io.to(key).emit('receive-message', { 
-                text: `*** NODE_${socket.id.substring(0,4)} CONNECTED ***`, 
+                text: "SYSTEM: Secure connection established.", 
                 time: time, type: 'system' 
             });
 
+            const roomSize = io.sockets.adapter.rooms.get(key)?.size || 0;
+            io.to(key).emit('user-update', { count: roomSize });
             socket.emit('login-success');
+        } else {
+            socket.emit('login-error', "Invalid Credentials.");
         }
     });
 
     socket.on('send-message', (data) => {
-        const time = new Date().toLocaleTimeString();
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const newMessage = { text: data.message, time: time, senderId: socket.id };
         if (roomMessages[data.room]) {
             roomMessages[data.room].push(newMessage);
@@ -49,6 +55,13 @@ io.on('connection', (socket) => {
         delete roomPasswords[room];
         io.to(room).emit('force-logout');
     });
+
+    socket.on('disconnect', () => {
+        if (socket.currentRoom) {
+            const roomSize = io.sockets.adapter.rooms.get(socket.currentRoom)?.size || 0;
+            io.to(socket.currentRoom).emit('user-update', { count: roomSize });
+        }
+    });
 });
 
-server.listen(3000, () => console.log('Terminal Bridge Active'));
+server.listen(3000, () => console.log('Bridge Active on Port 3000'));
