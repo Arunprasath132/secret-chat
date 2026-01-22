@@ -3,92 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Secret Bridge | Secure Tunnel</title>
+    <title>Secret Bridge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        /* Mobile Viewport Fix */
         :root { --vh: 1vh; }
-        html, body { 
-            height: 100vh; 
+        body { 
+            background-color: #020617; 
             height: calc(var(--vh) * 100); 
             margin: 0; 
+            display: flex; 
+            flex-direction: column; 
             overflow: hidden; 
-            background-color: #020617;
         }
 
-        /* Responsive Grid System */
-        .app-container {
-            display: grid;
-            grid-template-rows: auto 1fr auto;
+        /* The Grid Layout for perfect responsiveness */
+        .app-shell {
+            display: flex;
+            flex-direction: column;
             height: 100%;
             width: 100%;
         }
 
-        .glass { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        
-        /* Message Area - Scrollable */
         #messages {
+            flex: 1;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
 
-        /* Prevent iOS zoom on input focus */
-        input { font-size: 16px !important; }
+        /* Auto-expanding textarea styling */
+        #msgInput {
+            resize: none;
+            max-height: 120px; /* Prevents it from taking over the whole screen */
+            min-height: 44px;
+            font-size: 16px !important; /* Prevents iOS zoom */
+            line-height: 1.4;
+        }
 
+        .glass { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(15px); border-top: 1px solid rgba(255, 255, 255, 0.05); }
         .hidden { display: none !important; }
-        .animate-ui { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Message Bubbles - Word Wrap Fix */
+        .msg-bubble {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            max-width: 85%;
+        }
     </style>
 </head>
-<body class="text-slate-200">
+<body>
 
-    <div id="homeSection" class="h-full flex flex-col items-center justify-center p-6 text-center space-y-8 animate-ui">
-        <div class="space-y-2">
-            <h1 class="text-4xl font-black tracking-tighter uppercase italic">Secret <span class="text-blue-500">Bridge</span></h1>
-            <p class="text-slate-500 text-[10px] font-bold tracking-[0.3em] uppercase">Transient Tunnel v2.0</p>
-        </div>
-        <div class="w-full max-w-xs space-y-3">
-            <div class="p-4 bg-white/5 rounded-2xl border border-white/5 text-left">
-                <p class="text-[11px] text-slate-400 leading-relaxed italic">"History lives in RAM. One click wipes the bridge for everyone."</p>
-            </div>
-            <button onclick="showLogin()" class="w-full py-4 bg-blue-600 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20 active:scale-95 transition-all">Start Session</button>
-        </div>
-    </div>
-
-    <div id="loginSection" class="hidden h-full flex items-center justify-center p-4">
-        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] shadow-2xl space-y-6">
-            <h2 class="text-center font-black uppercase text-xs tracking-widest text-blue-500">Node Authentication</h2>
+    <div id="loginSection" class="flex-1 flex items-center justify-center p-6">
+        <div class="bg-slate-900/80 p-8 rounded-[2rem] w-full max-w-sm border border-white/5 shadow-2xl">
+            <h2 class="text-blue-500 font-black text-center uppercase tracking-widest mb-6 text-sm">Authentication</h2>
             <div class="space-y-3">
-                <input type="text" id="secretKey" placeholder="BRIDGE ID" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-sm uppercase outline-none focus:border-blue-500 text-white">
-                <input type="password" id="roomPass" placeholder="PASSWORD" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-sm outline-none focus:border-blue-500 text-white">
-                <button onclick="connectToChat()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white shadow-lg">Link Bridge</button>
-                <button onclick="hideLogin()" class="w-full text-[10px] font-bold uppercase text-slate-500">Go Back</button>
+                <input type="text" id="secretKey" placeholder="BRIDGE ID" class="w-full bg-black/40 border border-white/10 p-4 rounded-xl text-white text-center text-sm outline-none focus:border-blue-500">
+                <input type="password" id="roomPass" placeholder="PASSWORD" class="w-full bg-black/40 border border-white/10 p-4 rounded-xl text-white text-center text-sm outline-none focus:border-blue-500">
+                <button onclick="connectToChat()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20">Establish Link</button>
             </div>
         </div>
     </div>
 
-    <div id="chatSection" class="hidden app-container">
-        <header class="p-4 glass flex justify-between items-center z-10">
-            <div class="flex items-center space-x-3 overflow-hidden">
-                <div class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div>
-                <div class="truncate">
-                    <h3 id="headerRoomName" class="text-[10px] font-black uppercase text-white truncate">Bridge</h3>
-                    <p id="userCount" class="text-[8px] text-slate-500 font-bold">Nodes: 0</p>
-                </div>
+    <div id="chatSection" class="hidden app-shell">
+        <header class="p-4 glass flex justify-between items-center shrink-0">
+            <div class="flex items-center space-x-3 truncate">
+                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                <h3 id="headerRoomName" class="text-[10px] font-black uppercase text-white tracking-widest truncate">Bridge</h3>
             </div>
-            <button onclick="terminate()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-full text-[9px] font-black uppercase">Wipe</button>
+            <button onclick="terminate()" class="text-red-500 text-[10px] font-black uppercase bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/20">Wipe</button>
         </header>
 
-        <main id="messages" class="p-4 space-y-4 bg-[#020617]"></main>
+        <main id="messages"></main>
 
-        <footer class="p-4 glass border-t border-white/5">
-            <form onsubmit="event.preventDefault(); sendMessage();" class="flex space-x-2">
-                <input type="text" id="msgInput" autocomplete="off" placeholder="Message..." class="flex-1 bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
-                <button type="submit" class="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center shrink-0 active:scale-90 transition-all shadow-lg">
-                    <svg class="h-5 w-5 rotate-90" fill="white" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        <footer class="p-3 glass shrink-0">
+            <div class="max-w-3xl mx-auto flex items-end space-x-2">
+                <textarea id="msgInput" rows="1" placeholder="Type a message..." class="flex-1 bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all"></textarea>
+                
+                <button onclick="sendMessage()" class="bg-blue-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 active:scale-90 transition-all shadow-lg">
+                    <svg class="h-5 w-5 rotate-90 fill-white" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                 </button>
-            </form>
+            </div>
         </footer>
     </div>
 
@@ -96,19 +94,17 @@
         const socket = io();
         let currentRoom = "";
 
-        // Fix for mobile address bar
+        // Fix for mobile UI height
         const resize = () => { document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); };
         window.addEventListener('resize', resize);
         resize();
 
-        function showLogin() {
-            document.getElementById('homeSection').classList.add('hidden');
-            document.getElementById('loginSection').classList.remove('hidden');
-        }
-        function hideLogin() {
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('homeSection').classList.remove('hidden');
-        }
+        // Auto-growing textarea logic
+        const tx = document.getElementById('msgInput');
+        tx.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
 
         function connectToChat() {
             const key = document.getElementById('secretKey').value.trim();
@@ -122,7 +118,7 @@
         socket.on('login-success', () => {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('chatSection').classList.remove('hidden');
-            document.getElementById('headerRoomName').innerText = "ID: " + currentRoom;
+            document.getElementById('headerRoomName').innerText = currentRoom;
         });
 
         socket.on('load-history', (history) => {
@@ -136,6 +132,7 @@
             if (input.value.trim()) {
                 socket.emit('send-message', { room: currentRoom, message: input.value });
                 input.value = "";
+                input.style.height = '44px'; // Reset height
             }
         }
 
@@ -144,15 +141,16 @@
         function renderMessage(data) {
             const container = document.getElementById('messages');
             const wrap = document.createElement('div');
+            
             if (data.type === 'system') {
-                wrap.className = "flex justify-center my-4";
-                wrap.innerHTML = `<div class="bg-blue-500/10 text-blue-400 text-[8px] px-3 py-1 rounded-full font-bold uppercase italic border border-blue-500/10">${data.text}</div>`;
+                wrap.className = "flex justify-center";
+                wrap.innerHTML = `<div class="bg-blue-500/5 text-blue-400 text-[8px] px-3 py-1 rounded-full font-bold uppercase tracking-widest border border-blue-500/10 italic">${data.text}</div>`;
             } else {
                 const isMe = data.senderId === socket.id;
-                wrap.className = `flex ${isMe ? 'justify-end' : 'justify-start'} animate-ui`;
+                wrap.className = `flex ${isMe ? 'justify-end' : 'justify-start'}`;
                 wrap.innerHTML = `
-                    <div class="${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-200 rounded-tl-none'} px-4 py-2.5 rounded-2xl shadow-xl max-w-[85%]">
-                        <p class="text-sm leading-snug">${data.text}</p>
+                    <div class="msg-bubble ${isMe ? 'bg-blue-600 text-white rounded-2xl rounded-tr-none' : 'bg-slate-800 text-slate-200 rounded-2xl rounded-tl-none'} px-4 py-2.5 shadow-xl shadow-black/20">
+                        <p class="text-sm leading-relaxed">${data.text.replace(/\n/g, '<br>')}</p>
                         <span class="text-[7px] opacity-30 block mt-1 text-right font-mono">${data.time}</span>
                     </div>`;
             }
@@ -160,9 +158,8 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        socket.on('user-update', (d) => document.getElementById('userCount').innerText = `Nodes: ${d.count}`);
         socket.on('force-logout', () => location.reload());
-        function terminate() { if(confirm("Purge Bridge?")) socket.emit('end-session', currentRoom); }
+        function terminate() { if(confirm("Purge all data?")) socket.emit('end-session', currentRoom); }
     </script>
 </body>
 </html>
