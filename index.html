@@ -1,81 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Secret Bridge Pro</title>
+    <title>Secret Bridge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        :root { --vh: 1vh; }
-        html, body { 
-            height: 100%; height: calc(var(--vh) * 100); 
-            overflow: hidden; background: #020617; color: #f8fafc;
-            font-family: 'Inter', sans-serif;
-        }
-        .app-grid { display: grid; grid-template-rows: auto 1fr auto; height: 100%; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); }
+        :root { --vh: 1vh; --bg: #020617; --txt: #f8fafc; --glass: rgba(15, 23, 42, 0.9); }
+        [data-theme="light"] { --bg: #f8fafc; --txt: #020617; --glass: rgba(255, 255, 255, 0.9); }
+        
+        body { background: var(--bg); color: var(--txt); height: calc(var(--vh) * 100); overflow: hidden; }
+        .app-container { display: grid; grid-template-rows: auto 1fr auto; height: 100%; width: 100%; }
+        .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(125,125,125,0.1); }
         .hidden { display: none !important; }
         
-        /* Message Animations */
-        .msg-pop { animation: msgPop 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.28) forwards; }
-        @keyframes msgPop {
-            from { opacity: 0; transform: translateY(10px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        #messages::-webkit-scrollbar { width: 4px; }
-        #messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        /* Animations */
+        .fade { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #messages { overflow-y: auto; scroll-behavior: smooth; }
+        input { font-size: 16px !important; } /* Prevents iOS zoom */
     </style>
 </head>
-<body>
+<body class="transition-colors duration-300">
 
-    <div id="loginSection" class="h-full flex flex-col items-center justify-center p-6 animate-ui">
-        <div class="w-full max-w-sm glass rounded-[2.5rem] p-8 shadow-2xl">
-            <div class="text-center mb-8">
-                <div class="w-12 h-12 bg-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                </div>
-                <h1 class="text-2xl font-black tracking-tighter uppercase italic text-blue-500">Secret Bridge</h1>
-                <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase mt-1">Transient Memory Tunnel</p>
+    <button onclick="toggleTheme()" class="fixed top-5 right-5 z-50 w-10 h-10 rounded-full glass flex items-center justify-center text-lg">🌓</button>
+
+    <div id="homeSection" class="app-container fade">
+        <header class="p-6">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center font-black text-white">S</div>
+                <span class="font-black uppercase tracking-tighter text-xl">Bridge</span>
+            </div>
+        </header>
+
+        <main class="overflow-y-auto px-6 space-y-6">
+            <div class="py-10 text-center">
+                <h1 class="text-5xl font-black tracking-tighter mb-4">Secret <span class="text-blue-500">Bridge.</span></h1>
+                <p class="opacity-60 text-sm max-w-xs mx-auto">A transient tunnel for synchronized data. Messages live in memory and vanish when wiped.</p>
             </div>
 
-            <div class="space-y-4">
-                <input type="text" id="roomKey" placeholder="BRIDGE IDENTIFIER" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-xs uppercase outline-none focus:border-blue-500 transition-all">
-                <input type="password" id="roomPass" placeholder="ACCESS CODE" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-xs outline-none focus:border-blue-500 transition-all">
-                
-                <div class="bg-blue-500/5 p-4 rounded-xl border border-blue-500/10">
-                    <p class="text-[9px] text-slate-400 leading-relaxed uppercase font-semibold">
-                        History is stored in volatile RAM. It is visible to any node with the key until the <span class="text-red-500 font-black">WIPE</span> command is issued.
-                    </p>
+            <details class="glass rounded-2xl overflow-hidden group">
+                <summary class="p-4 font-bold text-xs uppercase tracking-widest cursor-pointer list-none flex justify-between items-center bg-white/5">
+                    How to Connect <span>+</span>
+                </summary>
+                <div class="p-4 space-y-4 border-t border-white/5 text-[11px] opacity-70 leading-relaxed">
+                    <p><b>1. ID:</b> Pick a unique Bridge ID. Your partner must use the exact same ID.</p>
+                    <p><b>2. Sync:</b> Once you connect, any messages sent while the other was "offline" will sync immediately.</p>
+                    <p><b>3. Purge:</b> Click 'Wipe' to erase all data from the server's RAM forever.</p>
                 </div>
+            </details>
+        </main>
 
-                <button onclick="connect()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
-                    Link Node
-                </button>
-            </div>
+        <footer class="p-6">
+            <button onclick="showLogin()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-blue-500/20 active:scale-95 transition-all">Start Session</button>
+        </footer>
+    </div>
+
+    <div id="loginSection" class="hidden h-full flex items-center justify-center p-6 fade">
+        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] space-y-4">
+            <h2 class="text-center font-black uppercase text-sm tracking-widest text-blue-500">Auth Required</h2>
+            <input type="text" id="roomInput" placeholder="BRIDGE ID" class="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-center font-mono uppercase text-sm outline-none focus:border-blue-500">
+            <input type="password" id="passInput" placeholder="PASSWORD" class="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-center font-mono text-sm outline-none focus:border-blue-500">
+            <button onclick="join()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-xs">Authorize</button>
+            <button onclick="hideLogin()" class="w-full opacity-40 text-[10px] font-bold uppercase">Cancel</button>
         </div>
     </div>
 
-    <div id="chatSection" class="hidden app-grid">
-        <header class="p-4 sm:p-6 glass border-b border-white/5 flex items-center justify-between">
+    <div id="chatSection" class="hidden app-container fade">
+        <header class="p-4 glass border-b border-white/5 flex items-center justify-between">
             <div class="flex items-center space-x-3 overflow-hidden">
-                <div class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                <div class="w-2 h-2 rounded-full bg-green-500"></div>
                 <div class="truncate">
-                    <h3 id="displayRoom" class="text-[10px] font-black uppercase tracking-widest truncate">Tunnel Active</h3>
-                    <p id="displayCount" class="text-[8px] text-slate-500 font-bold uppercase">Nodes: 0</p>
+                    <h3 id="roomDisp" class="text-[10px] font-black uppercase truncate">Tunnel</h3>
+                    <p id="countDisp" class="text-[8px] opacity-50 font-bold">Nodes: 0</p>
                 </div>
             </div>
-            <button onclick="wipe()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-full text-[9px] font-black uppercase hover:bg-red-600 hover:text-white transition-all">Wipe Bridge</button>
+            <button onclick="wipe()" class="bg-red-500/10 text-red-500 px-4 py-2 rounded-full text-[9px] font-black uppercase border border-red-500/20">Wipe</button>
         </header>
 
-        <main id="messages" class="p-4 space-y-4 flex flex-col"></main>
+        <main id="messages" class="p-4 space-y-4"></main>
 
-        <footer class="p-4 bg-slate-950/50 border-t border-white/5">
-            <form onsubmit="event.preventDefault(); send();" class="max-w-4xl mx-auto flex space-x-2">
-                <input type="text" id="msgInput" autocomplete="off" placeholder="Message..." class="flex-1 bg-slate-900 border border-white/10 rounded-xl px-4 py-3 focus:outline-none text-sm text-white focus:border-blue-500">
-                <button type="submit" class="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-xl active:scale-90 transition-all">
-                    <svg class="w-5 h-5 rotate-90" fill="white" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        <footer class="p-4 glass">
+            <form onsubmit="event.preventDefault(); send();" class="flex space-x-2 max-w-4xl mx-auto">
+                <input type="text" id="msgInput" placeholder="Message..." class="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 outline-none text-sm">
+                <button type="submit" class="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 fill-white rotate-90" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                 </button>
             </form>
         </footer>
@@ -86,72 +97,60 @@
         let currentRoom = "";
 
         const setVh = () => { document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); };
-        window.addEventListener('resize', setVh);
-        setVh();
+        window.addEventListener('resize', setVh); setVh();
 
-        function connect() {
-            const key = document.getElementById('roomKey').value.trim();
-            const pass = document.getElementById('roomPass').value.trim();
-            if(!key || !pass) return;
-            currentRoom = key;
-            socket.emit('join-room', { key, password: pass });
+        function toggleTheme() {
+            const h = document.documentElement;
+            h.setAttribute('data-theme', h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        }
+
+        function showLogin() { document.getElementById('homeSection').classList.add('hidden'); document.getElementById('loginSection').classList.remove('hidden'); }
+        function hideLogin() { document.getElementById('loginSection').classList.add('hidden'); document.getElementById('homeSection').classList.remove('hidden'); }
+
+        function join() {
+            const r = document.getElementById('roomInput').value.trim();
+            const p = document.getElementById('passInput').value.trim();
+            if(r && p) { currentRoom = r; socket.emit('join-room', { key: r, password: p }); }
         }
 
         socket.on('login-success', () => {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('chatSection').classList.remove('hidden');
-            document.getElementById('displayRoom').innerText = currentRoom;
+            document.getElementById('roomDisp').innerText = "ID: " + currentRoom;
         });
 
         socket.on('load-history', (history) => {
-            const container = document.getElementById('messages');
-            container.innerHTML = "";
-            history.forEach(msg => appendMessage(msg));
+            const m = document.getElementById('messages'); m.innerHTML = "";
+            history.forEach(d => append(d));
         });
 
         function send() {
-            const input = document.getElementById('msgInput');
-            if(!input.value.trim()) return;
-            socket.emit('send-message', { room: currentRoom, message: input.value });
-            input.value = "";
+            const i = document.getElementById('msgInput');
+            if(i.value.trim()) { socket.emit('send-message', { room: currentRoom, message: i.value }); i.value = ""; }
         }
 
-        socket.on('receive-message', (data) => appendMessage(data));
+        socket.on('receive-message', (data) => append(data));
 
-        function appendMessage(data) {
-            const container = document.getElementById('messages');
-            const wrapper = document.createElement('div');
-            
-            if (data.type === 'system') {
-                wrapper.className = "flex justify-center my-2 msg-pop";
-                wrapper.innerHTML = `<div class="bg-blue-500/5 border border-blue-500/10 text-blue-400 text-[8px] px-4 py-1.5 rounded-full font-bold uppercase tracking-tighter italic">${data.text}</div>`;
+        function append(d) {
+            const m = document.getElementById('messages');
+            const w = document.createElement('div');
+            if(d.type === 'system') {
+                w.className = "flex justify-center my-2";
+                w.innerHTML = `<div class="bg-blue-500/10 text-blue-500 text-[8px] px-3 py-1 rounded-full font-bold uppercase italic">${d.text}</div>`;
             } else {
-                const isMe = data.senderId === socket.id;
-                wrapper.className = `flex ${isMe ? 'justify-end' : 'justify-start'} msg-pop`;
-                wrapper.innerHTML = `
-                    <div class="${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-200 rounded-tl-none'} px-4 py-2.5 rounded-2xl shadow-lg max-w-[85%]">
-                        <p class="text-sm leading-snug">${data.text}</p>
-                        <span class="text-[7px] opacity-30 block mt-1 text-right font-mono">${data.time}</span>
-                    </div>`;
+                const isMe = d.senderId === socket.id;
+                w.className = `flex ${isMe ? 'justify-end' : 'justify-start'} fade`;
+                w.innerHTML = `<div class="${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'glass rounded-tl-none'} px-4 py-2 rounded-2xl max-w-[85%] shadow-sm">
+                    <p class="text-sm">${d.text}</p>
+                    <span class="text-[7px] opacity-40 block mt-1 text-right">${d.time}</span>
+                </div>`;
             }
-            container.appendChild(wrapper);
-            container.scrollTop = container.scrollHeight;
+            m.appendChild(w); m.scrollTop = m.scrollHeight;
         }
 
-        socket.on('user-update', (data) => {
-            document.getElementById('displayCount').innerText = `Nodes: ${data.count}`;
-        });
-
-        socket.on('force-logout', () => {
-            alert("BRIDGE TERMINATED: Data purged.");
-            location.reload();
-        });
-
-        function wipe() {
-            if(confirm("DANGER: This will permanently erase history for all users. Proceed?")) {
-                socket.emit('end-session', currentRoom);
-            }
-        }
+        socket.on('user-update', (d) => document.getElementById('countDisp').innerText = `Nodes: ${d.count}`);
+        socket.on('force-logout', () => location.reload());
+        function wipe() { if(confirm("Wipe all data?")) socket.emit('end-session', currentRoom); }
     </script>
 </body>
 </html>
