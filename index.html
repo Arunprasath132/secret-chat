@@ -41,7 +41,7 @@
                     Purely <span class="text-blue-500">Transient.</span>
                 </h1>
                 <p class="text-slate-400 text-xs leading-relaxed">
-                    Secret Bridge is a secure, ephemeral messaging portal. We don't use databases or permanent storage. Your conversations live in the "here and now"—existing only in volatile server memory until the bridge is destroyed.
+                    Secret Bridge is a secure, ephemeral messaging portal. We don't use databases. Your conversations exist only in volatile server memory until the bridge is destroyed.
                 </p>
             </div>
 
@@ -50,15 +50,15 @@
                 <div class="grid grid-cols-1 gap-2">
                     <div class="step-card flex items-start space-x-3">
                         <span class="text-blue-500 font-black text-xs">01</span>
-                        <p class="text-[10px] text-slate-300">Create or enter a unique <span class="text-white font-bold">Bridge ID</span> (e.g., Alpha-Tunnel-99).</p>
+                        <p class="text-[10px] text-slate-300">Create or enter a unique <span class="text-white font-bold">Bridge ID</span>.</p>
                     </div>
                     <div class="step-card flex items-start space-x-3">
                         <span class="text-blue-500 font-black text-xs">02</span>
-                        <p class="text-[10px] text-slate-300">Set a shared <span class="text-white font-bold">Password</span> and share it with your partner.</p>
+                        <p class="text-[10px] text-slate-300">Set a shared <span class="text-white font-bold">Password</span> with your partner.</p>
                     </div>
                     <div class="step-card flex items-start space-x-3">
                         <span class="text-blue-500 font-black text-xs">03</span>
-                        <p class="text-[10px] text-slate-300">Once connected, use the <span class="text-red-500 font-bold">Wipe</span> button to erase all traces instantly.</p>
+                        <p class="text-[10px] text-slate-300">Use <span class="text-red-500 font-bold">Wipe</span> to erase all traces instantly.</p>
                     </div>
                 </div>
             </div>
@@ -74,17 +74,15 @@
             <button onclick="hideLogin()" class="absolute top-6 right-6 text-slate-500 text-[10px] font-bold">CANCEL</button>
             <h2 class="text-center font-black uppercase text-sm tracking-widest mb-6 text-blue-500">Node Authentication</h2>
             <div class="space-y-3">
-                <input type="text" id="secretKey" placeholder="UNIQUE BRIDGE ID" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-xs uppercase outline-none focus:border-blue-500">
-                <input type="password" id="roomPass" placeholder="ACCESS PASSWORD" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-xs outline-none focus:border-blue-500">
-                
+                <input type="text" id="secretKey" placeholder="UNIQUE BRIDGE ID" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-xs uppercase outline-none focus:border-blue-500 text-white">
+                <input type="password" id="roomPass" placeholder="ACCESS PASSWORD" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center font-mono text-xs outline-none focus:border-blue-500 text-white">
                 <div class="flex items-start space-x-2 py-2">
                     <input type="checkbox" id="terms" class="mt-1 accent-blue-600">
                     <label for="terms" class="text-[9px] text-slate-500 uppercase font-bold leading-tight">
                         I acknowledge that wiping the bridge destroys data for all connected nodes.
                     </label>
                 </div>
-                
-                <button onclick="connectToChat()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xs uppercase tracking-widest">Authorize & Connect</button>
+                <button onclick="connectToChat()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white">Authorize & Connect</button>
             </div>
         </div>
     </div>
@@ -94,7 +92,7 @@
             <div class="flex items-center space-x-3 overflow-hidden">
                 <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div>
                 <div class="truncate">
-                    <h3 id="headerRoomName" class="text-[10px] font-black uppercase tracking-widest truncate text-slate-200">Bridge Active</h3>
+                    <h3 id="headerRoomName" class="text-[10px] font-black uppercase tracking-widest truncate text-slate-200 text-white">Bridge Active</h3>
                     <p id="userCount" class="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">Nodes: 0</p>
                 </div>
             </div>
@@ -102,7 +100,6 @@
         </header>
 
         <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
-        <div id="typingArea" class="px-6 py-1 text-[8px] text-blue-400 italic h-4 uppercase font-bold tracking-widest"></div>
 
         <div class="p-4 bg-black/40">
             <form onsubmit="event.preventDefault(); sendMessage();" class="max-w-3xl mx-auto flex space-x-2">
@@ -147,7 +144,13 @@
             document.getElementById('headerRoomName').innerText = "ID: " + currentRoom;
         });
 
-        // Chat Logic
+        // SYNC PREVIOUS MESSAGES
+        socket.on('load-history', (history) => {
+            const container = document.getElementById('messages');
+            container.innerHTML = ""; 
+            history.forEach(data => renderMessage(data));
+        });
+
         function sendMessage() {
             const input = document.getElementById('msgInput');
             if (!input.value.trim()) return;
@@ -155,7 +158,9 @@
             input.value = "";
         }
 
-        socket.on('receive-message', (data) => {
+        socket.on('receive-message', (data) => renderMessage(data));
+
+        function renderMessage(data) {
             const container = document.getElementById('messages');
             const wrapper = document.createElement('div');
             if (data.type === 'system') {
@@ -168,7 +173,7 @@
             }
             container.appendChild(wrapper);
             container.scrollTop = container.scrollHeight;
-        });
+        }
 
         socket.on('user-update', (data) => {
             document.getElementById('userCount').innerText = `Nodes: ${data.count}`;
@@ -177,7 +182,7 @@
         socket.on('force-logout', () => location.reload());
 
         function terminate() {
-            if(confirm("DANGER: This will wipe the bridge and all history for all users. Continue?")) {
+            if(confirm("DANGER: This will wipe the bridge and all history. Continue?")) {
                 socket.emit('end-session', currentRoom);
             }
         }
