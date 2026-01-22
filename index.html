@@ -1,156 +1,187 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Secret Bridge</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL_BRIDGE_V1.0</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        :root { --vh: 1vh; --bg: #020617; --txt: #f8fafc; --glass: rgba(15, 23, 42, 0.9); }
-        [data-theme="light"] { --bg: #f8fafc; --txt: #020617; --glass: rgba(255, 255, 255, 0.9); }
-        
-        body { background: var(--bg); color: var(--txt); height: calc(var(--vh) * 100); overflow: hidden; }
-        .app-container { display: grid; grid-template-rows: auto 1fr auto; height: 100%; width: 100%; }
-        .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(125,125,125,0.1); }
+        /* OLD SCHOOL TERMINAL STYLING */
+        * { box-sizing: border-box; }
+        body { 
+            background-color: #000; 
+            color: #00ff00; 
+            font-family: "Courier New", Courier, monospace; 
+            margin: 0; 
+            height: 100vh; 
+            display: flex;
+            flex-direction: column;
+        }
+
         .hidden { display: none !important; }
-        
-        /* Animations */
-        .fade { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        #messages { overflow-y: auto; scroll-behavior: smooth; }
-        input { font-size: 16px !important; } /* Prevents iOS zoom */
+
+        /* HEADER */
+        header { 
+            border-bottom: 2px solid #00ff00; 
+            padding: 10px; 
+            display: flex; 
+            justify-content: space-between;
+            background: #000;
+        }
+
+        /* LOGIN BOX */
+        #loginSection {
+            margin: auto;
+            border: 2px solid #00ff00;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        input {
+            background: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            text-transform: uppercase;
+        }
+
+        button:hover { background: #00cc00; }
+
+        /* CHAT AREA */
+        #chatSection {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #messages {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 20px;
+            border-bottom: 2px solid #00ff00;
+        }
+
+        .msg { margin-bottom: 10px; line-height: 1.4; }
+        .system { color: #ffff00; font-style: italic; }
+        .time { color: #008800; font-size: 0.8em; margin-right: 10px; }
+        .user { font-weight: bold; color: #fff; margin-right: 5px; }
+
+        /* INPUT BAR */
+        .input-area {
+            display: flex;
+            padding: 10px;
+            background: #000;
+        }
+
+        #msgInput { flex: 1; margin-right: 10px; margin-bottom: 0; }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #00ff00; }
     </style>
 </head>
-<body class="transition-colors duration-300">
+<body>
 
-    <button onclick="toggleTheme()" class="fixed top-5 right-5 z-50 w-10 h-10 rounded-full glass flex items-center justify-center text-lg">🌓</button>
-
-    <div id="homeSection" class="app-container fade">
-        <header class="p-6">
-            <div class="flex items-center space-x-2">
-                <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center font-black text-white">S</div>
-                <span class="font-black uppercase tracking-tighter text-xl">Bridge</span>
-            </div>
-        </header>
-
-        <main class="overflow-y-auto px-6 space-y-6">
-            <div class="py-10 text-center">
-                <h1 class="text-5xl font-black tracking-tighter mb-4">Secret <span class="text-blue-500">Bridge.</span></h1>
-                <p class="opacity-60 text-sm max-w-xs mx-auto">A transient tunnel for synchronized data. Messages live in memory and vanish when wiped.</p>
-            </div>
-
-            <details class="glass rounded-2xl overflow-hidden group">
-                <summary class="p-4 font-bold text-xs uppercase tracking-widest cursor-pointer list-none flex justify-between items-center bg-white/5">
-                    How to Connect <span>+</span>
-                </summary>
-                <div class="p-4 space-y-4 border-t border-white/5 text-[11px] opacity-70 leading-relaxed">
-                    <p><b>1. ID:</b> Pick a unique Bridge ID. Your partner must use the exact same ID.</p>
-                    <p><b>2. Sync:</b> Once you connect, any messages sent while the other was "offline" will sync immediately.</p>
-                    <p><b>3. Purge:</b> Click 'Wipe' to erase all data from the server's RAM forever.</p>
-                </div>
-            </details>
-        </main>
-
-        <footer class="p-6">
-            <button onclick="showLogin()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-blue-500/20 active:scale-95 transition-all">Start Session</button>
-        </footer>
+    <div id="loginSection">
+        <h2>[ BRIDGE_LOGIN ]</h2>
+        <p>IDENTIFY TUNNEL PARAMETERS:</p>
+        <input type="text" id="roomInput" placeholder="TUNNEL_ID">
+        <input type="password" id="passInput" placeholder="ACCESS_KEY">
+        <button onclick="connect()">Establish Link</button>
     </div>
 
-    <div id="loginSection" class="hidden h-full flex items-center justify-center p-6 fade">
-        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] space-y-4">
-            <h2 class="text-center font-black uppercase text-sm tracking-widest text-blue-500">Auth Required</h2>
-            <input type="text" id="roomInput" placeholder="BRIDGE ID" class="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-center font-mono uppercase text-sm outline-none focus:border-blue-500">
-            <input type="password" id="passInput" placeholder="PASSWORD" class="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-center font-mono text-sm outline-none focus:border-blue-500">
-            <button onclick="join()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-xs">Authorize</button>
-            <button onclick="hideLogin()" class="w-full opacity-40 text-[10px] font-bold uppercase">Cancel</button>
+    <div id="chatSection" class="hidden">
+        <header>
+            <div>STATUS: CONNECTED // ROOM: <span id="roomDisp"></span></div>
+            <button onclick="wipe()" style="background: #ff0000; color: #fff; padding: 2px 10px; font-size: 10px;">PURGE_ALL</button>
+        </header>
+
+        <div id="messages"></div>
+
+        <div class="input-area">
+            <span style="padding-top:10px; margin-right:5px;">></span>
+            <input type="text" id="msgInput" placeholder="ENTER_DATA..." onkeypress="if(event.key==='Enter') send()">
+            <button onclick="send()">SEND</button>
         </div>
-    </div>
-
-    <div id="chatSection" class="hidden app-container fade">
-        <header class="p-4 glass border-b border-white/5 flex items-center justify-between">
-            <div class="flex items-center space-x-3 overflow-hidden">
-                <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                <div class="truncate">
-                    <h3 id="roomDisp" class="text-[10px] font-black uppercase truncate">Tunnel</h3>
-                    <p id="countDisp" class="text-[8px] opacity-50 font-bold">Nodes: 0</p>
-                </div>
-            </div>
-            <button onclick="wipe()" class="bg-red-500/10 text-red-500 px-4 py-2 rounded-full text-[9px] font-black uppercase border border-red-500/20">Wipe</button>
-        </header>
-
-        <main id="messages" class="p-4 space-y-4"></main>
-
-        <footer class="p-4 glass">
-            <form onsubmit="event.preventDefault(); send();" class="flex space-x-2 max-w-4xl mx-auto">
-                <input type="text" id="msgInput" placeholder="Message..." class="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 outline-none text-sm">
-                <button type="submit" class="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5 fill-white rotate-90" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                </button>
-            </form>
-        </footer>
     </div>
 
     <script>
         const socket = io();
         let currentRoom = "";
 
-        const setVh = () => { document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); };
-        window.addEventListener('resize', setVh); setVh();
-
-        function toggleTheme() {
-            const h = document.documentElement;
-            h.setAttribute('data-theme', h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-        }
-
-        function showLogin() { document.getElementById('homeSection').classList.add('hidden'); document.getElementById('loginSection').classList.remove('hidden'); }
-        function hideLogin() { document.getElementById('loginSection').classList.add('hidden'); document.getElementById('homeSection').classList.remove('hidden'); }
-
-        function join() {
-            const r = document.getElementById('roomInput').value.trim();
-            const p = document.getElementById('passInput').value.trim();
-            if(r && p) { currentRoom = r; socket.emit('join-room', { key: r, password: p }); }
+        function connect() {
+            const r = document.getElementById('roomInput').value;
+            const p = document.getElementById('passInput').value;
+            if(r && p) {
+                currentRoom = r;
+                socket.emit('join-room', { key: r, password: p });
+            }
         }
 
         socket.on('login-success', () => {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('chatSection').classList.remove('hidden');
-            document.getElementById('roomDisp').innerText = "ID: " + currentRoom;
+            document.getElementById('roomDisp').innerText = currentRoom;
         });
 
         socket.on('load-history', (history) => {
-            const m = document.getElementById('messages'); m.innerHTML = "";
             history.forEach(d => append(d));
         });
 
         function send() {
             const i = document.getElementById('msgInput');
-            if(i.value.trim()) { socket.emit('send-message', { room: currentRoom, message: i.value }); i.value = ""; }
+            if(i.value) {
+                socket.emit('send-message', { room: currentRoom, message: i.value });
+                i.value = "";
+            }
         }
 
         socket.on('receive-message', (data) => append(data));
 
         function append(d) {
             const m = document.getElementById('messages');
-            const w = document.createElement('div');
+            const div = document.createElement('div');
+            div.className = 'msg';
+            
             if(d.type === 'system') {
-                w.className = "flex justify-center my-2";
-                w.innerHTML = `<div class="bg-blue-500/10 text-blue-500 text-[8px] px-3 py-1 rounded-full font-bold uppercase italic">${d.text}</div>`;
+                div.innerHTML = `<span class="system">${d.text}</span>`;
             } else {
                 const isMe = d.senderId === socket.id;
-                w.className = `flex ${isMe ? 'justify-end' : 'justify-start'} fade`;
-                w.innerHTML = `<div class="${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'glass rounded-tl-none'} px-4 py-2 rounded-2xl max-w-[85%] shadow-sm">
-                    <p class="text-sm">${d.text}</p>
-                    <span class="text-[7px] opacity-40 block mt-1 text-right">${d.time}</span>
-                </div>`;
+                div.innerHTML = `
+                    <span class="time">[${d.time}]</span>
+                    <span class="user">${isMe ? '<YOU>' : '<NODE>'}</span>
+                    <span>${d.text}</span>
+                `;
             }
-            m.appendChild(w); m.scrollTop = m.scrollHeight;
+            m.appendChild(div);
+            m.scrollTop = m.scrollHeight;
         }
 
-        socket.on('user-update', (d) => document.getElementById('countDisp').innerText = `Nodes: ${d.count}`);
-        socket.on('force-logout', () => location.reload());
-        function wipe() { if(confirm("Wipe all data?")) socket.emit('end-session', currentRoom); }
+        socket.on('force-logout', () => {
+            alert("SESSION_TERMINATED: MEMORY_PURGED");
+            location.reload();
+        });
+
+        function wipe() {
+            if(confirm("EXECUTE GLOBAL PURGE?")) socket.emit('end-session', currentRoom);
+        }
     </script>
 </body>
 </html>
