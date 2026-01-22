@@ -8,14 +8,35 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         :root { --vh: 1vh; }
-        body { background-color: #020617; color: #e2e8f0; height: calc(var(--vh) * 100); margin: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: sans-serif; }
+        body { 
+            background-color: #020617; 
+            color: #e2e8f0; 
+            height: calc(var(--vh) * 100); 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
+            font-family: sans-serif; 
+        }
+        
+        /* Hides scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hides scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
         .glass { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .hidden { display: none !important; }
         #messages { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
         .input-style { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 1rem; width: 100%; outline: none; transition: border 0.3s; }
         .input-style:focus { border-color: #3b82f6; }
         
-        /* Animation for the pulse dot */
         .pulse { animation: pulse-animation 2s infinite; }
         @keyframes pulse-animation {
             0% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.4); }
@@ -25,7 +46,7 @@
 </head>
 <body class="p-3">
 
-    <div id="homeSection" class="glass w-full max-w-2xl p-6 sm:p-10 rounded-[2.5rem] shadow-2xl animate-in fade-in zoom-in duration-500 overflow-y-auto max-h-[95vh]">
+    <div id="homeSection" class="glass w-full max-w-2xl p-6 sm:p-10 rounded-[2.5rem] shadow-2xl animate-in fade-in zoom-in duration-500 overflow-y-auto max-h-[90vh] no-scrollbar">
         
         <div class="flex justify-between items-center mb-8 bg-white/5 rounded-full px-4 py-2 border border-white/5">
             <div class="flex items-center gap-2">
@@ -37,8 +58,10 @@
 
         <div class="text-center mb-10">
             <h1 class="text-4xl font-black text-white mb-2 tracking-tighter uppercase italic">Secret<span class="text-blue-500">Bridge</span></h1>
-            <p class="text-slate-400 text-sm max-w-md mx-auto">To start a private session, simply **create a unique Room ID** and set a password. Share these credentials with your partner. 
-                Once they enter the same Room ID and password, the bridge will establish, allowing you both to chat in a secure, volatile environment.</p>
+            <p class="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
+                To start a private session, simply create a unique Room ID and set a password. Share these credentials with your partner. 
+                Once they enter the same Room ID and password, the bridge will establish, allowing you both to chat in a secure, volatile environment.
+            </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
@@ -94,7 +117,7 @@
         <button onclick="showHome()" class="text-slate-500 text-[10px] mb-4 hover:text-white transition-colors flex items-center gap-1 uppercase font-bold tracking-widest">
             ← Back to Home
         </button>
-        <h1 class="text-2xl font-black text-blue-500 text-center mb-1 tracking-tighter italic">SECURE BRIDGE</h1>
+        <h1 class="text-2xl font-black text-blue-500 text-center mb-1 tracking-tighter italic uppercase">SECURE BRIDGE</h1>
         <p class="text-[9px] text-slate-500 text-center mb-6 uppercase tracking-[0.3em]">Credentials Required</p>
         
         <div id="previewBox" class="mb-4 p-3 bg-blue-500/5 rounded-xl border border-blue-500/10 hidden">
@@ -105,7 +128,7 @@
         <div class="space-y-3">
             <input type="text" id="secretKey" placeholder="Room ID" class="input-style text-center font-mono">
             <input type="password" id="roomPass" placeholder="Password" class="input-style text-center font-mono">
-            <p id="errorMsg" class="text-red-500 text-[10px] text-center hidden"></p>
+            <p id="errorMsg" class="text-red-500 text-[10px] text-center hidden font-bold"></p>
             <button onclick="connectToChat()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold active:scale-95 transition-all uppercase text-xs tracking-widest shadow-lg shadow-blue-500/20">Unlock Bridge</button>
         </div>
     </div>
@@ -116,13 +139,13 @@
                 <div id="statusDot" class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
                 <div>
                     <div class="text-[10px] font-bold text-slate-200 uppercase tracking-tighter" id="headerRoomName">Bridge Active</div>
-                    <div id="userCount" class="text-[9px] text-slate-500">1 Member Connected</div>
+                    <div id="userCount" class="text-[9px] text-slate-500 font-bold">1 Member Connected</div>
                 </div>
             </div>
             <button onclick="terminate()" class="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-1.5 rounded-full font-bold uppercase hover:bg-red-500 hover:text-white transition-all">Wipe</button>
         </div>
 
-        <div id="messages" class="flex-1 p-4 overflow-y-auto space-y-4 flex flex-col"></div>
+        <div id="messages" class="flex-1 p-4 overflow-y-auto space-y-4 flex flex-col no-scrollbar"></div>
         <div id="typingArea" class="px-6 py-1 text-[10px] text-blue-400 italic h-5"></div>
 
         <div class="p-4 bg-black/20 border-t border-white/5">
@@ -140,7 +163,6 @@
         let currentRoom = "";
         let typingTimeout;
 
-        // Update Live Time on Home
         setInterval(() => {
             const now = new Date();
             document.getElementById('liveTime').innerText = now.toISOString().split('T')[1].split('.')[0] + " UTC";
@@ -219,7 +241,7 @@
             wrapper.innerHTML = `
                 <div class="${sender === 'me' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-200 rounded-tl-none'} px-4 py-2.5 rounded-2xl shadow-xl max-w-[85%] mb-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <p class="text-[13px] leading-relaxed">${text}</p>
-                    <span class="text-[8px] opacity-40 block mt-1 text-right font-mono">${time}</span>
+                    <span class="text-[8px] opacity-40 block mt-1 text-right font-mono tracking-tighter">${time}</span>
                 </div>`;
             container.appendChild(wrapper);
             container.scrollTop = container.scrollHeight;
@@ -249,4 +271,3 @@
     </script>
 </body>
 </html>
-
