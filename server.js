@@ -25,16 +25,26 @@ io.on('connection', (socket) => {
             socket.emit('load-history', roomMessages[key]);
 
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            io.to(key).emit('receive-message', { text: "SYSTEM: Bridge Secured.", time, type: 'system' });
+            io.to(key).emit('receive-message', { 
+                text: "SYSTEM: Secure connection established.", 
+                time, type: 'system' 
+            });
+
+            const count = io.sockets.adapter.rooms.get(key)?.size || 0;
+            io.to(key).emit('user-update', { count });
             socket.emit('login-success');
+        } else {
+            socket.emit('login-error', "Verification failed.");
         }
     });
 
     socket.on('send-message', (data) => {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const msg = { text: data.message, time, senderId: socket.id, type: 'user' };
-        if (roomMessages[data.room]) roomMessages[data.room].push(msg);
-        io.to(data.room).emit('receive-message', msg);
+        const newMessage = { text: data.message, time, senderId: socket.id };
+        if (roomMessages[data.room]) {
+            roomMessages[data.room].push(newMessage);
+        }
+        io.to(data.room).emit('receive-message', newMessage);
     });
 
     socket.on('end-session', (room) => {
@@ -44,4 +54,4 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(3000, '0.0.0.0', () => console.log('Bridge Running'));
+server.listen(3000, '0.0.0.0', () => console.log('Bridge Live on Port 3000'));
