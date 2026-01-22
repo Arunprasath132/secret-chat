@@ -25,10 +25,7 @@ io.on('connection', (socket) => {
             socket.emit('load-history', roomMessages[key]);
 
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            io.to(key).emit('receive-message', { text: "SYSTEM: Bridge synchronized.", time, type: 'system' });
-            
-            const count = io.sockets.adapter.rooms.get(key)?.size || 0;
-            io.to(key).emit('user-update', { count });
+            io.to(key).emit('receive-message', { text: "SYSTEM: Bridge Secured.", time, type: 'system' });
             socket.emit('login-success');
         }
     });
@@ -47,4 +44,4 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(3000, '0.0.0.0', () => console.log('Bridge Live'));
+server.listen(3000, '0.0.0.0', () => console.log('Bridge Running'));
