@@ -4,81 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Secret Bridge Pro</title>
-    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         :root { --vh: 1vh; }
-        body { background-color: #020617; color: #e2e8f0; height: calc(var(--vh) * 100); margin: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #020617; color: #e2e8f0; height: calc(var(--vh) * 100); margin: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: sans-serif; }
+        
         .glass { background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .hidden { display: none !important; }
-        #messages { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        .input-style { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 0.85rem; width: 100%; outline: none; transition: all 0.3s; font-size: 15px; }
-        .input-style:focus { border-color: #3b82f6; background: #020617; }
-        .msg-bubble { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes pop { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        /* ANIMATIONS */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+
+        .animate-slide { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .msg-pop { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .pulse-active { animation: pulseGlow 2s infinite; }
+
+        .input-style { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 0.85rem; width: 100%; outline: none; transition: 0.3s; }
+        .input-style:focus { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.1); }
+        
+        #messages::-webkit-scrollbar { width: 3px; }
+        #messages::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
 </head>
 <body class="p-4">
 
-    <div id="loginSection" class="glass w-full max-w-sm p-7 sm:p-9 rounded-[2.5rem] shadow-2xl overflow-y-auto max-h-full">
+    <div id="loginSection" class="glass w-full max-w-sm p-8 rounded-[2.5rem] shadow-2xl animate-slide overflow-y-auto max-h-full">
         <div class="text-center mb-6">
-            <h1 class="text-2xl font-black text-blue-500 tracking-tighter mb-4 italic">SECRET BRIDGE</h1>
-            
+            <h1 class="text-2xl font-black text-blue-500 tracking-tighter mb-4 italic uppercase">Secret Bridge</h1>
             <div class="text-left space-y-3 mb-6">
-                <p class="text-[11px] leading-relaxed text-slate-400 text-center italic font-bold uppercase tracking-widest">
-                    Temporary Data Tunnel
+                <p class="text-[11px] leading-relaxed text-slate-400">
+                    A peer-to-peer data tunnel. This room is <span class="text-blue-400">volatile</span>: data exists only in server RAM. Use the <b>Wipe</b> command to destroy all evidence.
                 </p>
             </div>
-
-            <div class="bg-blue-600/10 rounded-2xl p-4 text-left border border-blue-500/20 mb-4">
-                <div class="grid grid-cols-2 gap-2 text-[10px]">
-                    <div class="bg-black/40 p-2 rounded-xl text-center">🛡️ <span class="text-slate-300">No Logs</span></div>
-                    <div class="bg-black/40 p-2 rounded-xl text-center">🔑 <span class="text-slate-300">Dual-Key</span></div>
-                </div>
+            <div class="bg-blue-600/5 rounded-2xl p-4 border border-blue-500/10 grid grid-cols-2 gap-2 text-[10px] font-bold">
+                <div class="bg-black/30 p-2 rounded-xl">🛡️ NO LOGS</div>
+                <div class="bg-black/30 p-2 rounded-xl">🔑 DUAL-KEY</div>
             </div>
         </div>
 
         <div class="space-y-3">
+            <div id="previewBox" class="p-3 bg-blue-500/5 rounded-xl border border-blue-500/10 hidden mb-2 text-center">
+                <p id="previewText" class="text-[10px] text-slate-500 italic truncate">Checking activity...</p>
+            </div>
             <input type="text" id="secretKey" placeholder="Bridge ID" class="input-style text-center font-mono uppercase tracking-widest">
             <input type="password" id="roomPass" placeholder="Access Password" class="input-style text-center font-mono">
             
-            <div class="flex items-start space-x-3 px-1 py-2">
-                <input type="checkbox" id="terms" class="mt-1 w-4 h-4 rounded accent-blue-600 cursor-pointer">
-                <label for="terms" class="text-[10px] text-slate-500 leading-tight cursor-pointer">
-                    I acknowledge that data is volatile and session wipe is permanent.
-                </label>
+            <div class="flex items-center space-x-3 px-1 py-2">
+                <input type="checkbox" id="terms" class="w-4 h-4 rounded accent-blue-600">
+                <label for="terms" class="text-[10px] text-slate-500 leading-tight">I agree to purge session data upon exit.</label>
             </div>
 
-            <button onclick="connectToChat()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black active:scale-95 transition-all uppercase text-xs tracking-[0.2em] shadow-lg shadow-blue-500/20">Establish Bridge</button>
-            
-            <button onclick="copyAppLink()" class="w-full text-[10px] text-slate-500 uppercase font-bold py-2 mt-2 hover:text-blue-400 transition-colors">
-                🔗 Copy Bridge URL
-            </button>
+            <button onclick="connectToChat()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black active:scale-95 transition-all uppercase text-xs tracking-widest pulse-active">Initialize Bridge</button>
+            <button onclick="navigator.clipboard.writeText(window.location.href); alert('URL Copied!')" class="w-full text-[10px] text-slate-500 uppercase font-bold mt-4 opacity-50 hover:opacity-100 transition-opacity">🔗 Copy Shared URL</button>
         </div>
     </div>
 
-    <div id="chatSection" class="hidden glass w-full max-w-2xl h-full sm:h-[90vh] flex flex-col rounded-[2.5rem] overflow-hidden">
+    <div id="chatSection" class="hidden glass w-full max-w-2xl h-full sm:h-[90vh] flex flex-col rounded-[2.5rem] overflow-hidden shadow-2xl animate-slide">
         <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
             <div class="flex items-center space-x-3">
-                <div id="statusDot" class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
                 <div>
                     <div class="text-[11px] font-black text-slate-200 uppercase tracking-widest" id="headerRoomName">Active</div>
-                    <div id="userCount" class="text-[9px] text-slate-500 font-bold uppercase tracking-tighter">Connecting...</div>
+                    <div id="userCount" class="text-[9px] text-slate-500 font-bold uppercase">Syncing...</div>
                 </div>
             </div>
-            <button onclick="terminate()" class="text-[10px] bg-red-500/10 text-red-500 border border-red-500/30 px-4 py-2 rounded-full font-black uppercase">Destroy</button>
+            <button onclick="terminate()" class="text-[10px] bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-full font-black uppercase hover:bg-red-600 hover:text-white transition-all">Destruct</button>
         </div>
 
         <div id="messages" class="flex-1 p-5 overflow-y-auto space-y-4 flex flex-col"></div>
         <div id="typingArea" class="px-7 py-1 text-[10px] text-blue-400 italic h-6"></div>
 
-        <div class="p-5 bg-black/30 border-t border-white/5">
+        <div class="p-5 bg-black/20 border-t border-white/5">
             <form onsubmit="event.preventDefault(); sendMessage();" class="flex space-x-3">
-                <input type="text" id="msgInput" autocomplete="off" placeholder="Write message..." class="flex-1 bg-slate-900/50 border border-white/10 rounded-full px-6 py-4 focus:outline-none text-sm text-white focus:border-blue-500/40">
-                <button type="submit" class="bg-blue-600 w-14 h-14 rounded-full flex items-center justify-center shadow-xl active:scale-90 transition-all">
+                <input type="text" id="msgInput" autocomplete="off" placeholder="Write message..." class="flex-1 bg-slate-900/50 border border-white/5 rounded-full px-6 py-4 focus:outline-none text-sm text-white focus:border-blue-500/30">
+                <button type="submit" class="bg-blue-600 w-14 h-14 rounded-full flex items-center justify-center active:scale-90 transition-all shadow-lg hover:shadow-blue-500/20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 rotate-90" fill="white" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                 </button>
             </form>
@@ -94,16 +97,25 @@
         window.addEventListener('resize', setVh);
         setVh();
 
-        function copyAppLink() {
-            navigator.clipboard.writeText(window.location.href);
-            alert("URL copied to clipboard!");
-        }
+        // Preview Logic
+        document.getElementById('secretKey').addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            if (val) {
+                document.getElementById('previewBox').classList.remove('hidden');
+                socket.emit('get-preview', val);
+            } else {
+                document.getElementById('previewBox').classList.add('hidden');
+            }
+        });
+
+        socket.on('preview-response', (data) => {
+            document.getElementById('previewText').innerText = data.text;
+        });
 
         function connectToChat() {
             const key = document.getElementById('secretKey').value.trim();
             const pass = document.getElementById('roomPass').value.trim();
-            const terms = document.getElementById('terms').checked;
-            if (!terms) { alert("Accept the Safety Protocol."); return; }
+            if (!document.getElementById('terms').checked) { alert("Accept Safety Protocol."); return; }
             if (!key || !pass) return;
             currentRoom = key;
             socket.emit('join-room', { key: key, password: pass });
@@ -115,10 +127,12 @@
             document.getElementById('headerRoomName').innerText = "BRIDGE: " + currentRoom;
         });
 
+        socket.on('login-error', (msg) => { alert(msg); });
+
         socket.on('load-history', (history) => {
             const container = document.getElementById('messages');
             container.innerHTML = "";
-            history.forEach(msg => appendToScreen(msg.text, msg.senderId === socket.id ? 'me' : 'them', msg.time));
+            history.forEach(msg => appendToScreen(msg.text, msg.senderId === socket.id ? 'me' : 'them', msg.time, msg.type));
         });
 
         function sendMessage() {
@@ -130,14 +144,24 @@
         }
 
         socket.on('receive-message', (data) => {
-            appendToScreen(data.text, data.senderId === socket.id ? 'me' : 'them', data.time);
+            appendToScreen(data.text, data.senderId === socket.id ? 'me' : 'them', data.time, data.type);
         });
 
-        function appendToScreen(text, sender, time) {
+        function appendToScreen(text, sender, time, type) {
             const container = document.getElementById('messages');
             const wrapper = document.createElement('div');
-            wrapper.className = `flex ${sender === 'me' ? 'justify-end' : 'justify-start'}`;
-            wrapper.innerHTML = `<div class="msg-bubble ${sender === 'me' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-200 rounded-tl-none'} px-5 py-3 rounded-3xl shadow-xl max-w-[85%] mb-1"><p class="text-[14px] leading-relaxed">${text}</p><span class="text-[9px] opacity-30 block mt-1 text-right font-mono">${time}</span></div>`;
+            
+            if (type === 'system') {
+                wrapper.className = "flex justify-center my-4 msg-pop";
+                wrapper.innerHTML = `<div class="bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] px-6 py-2 rounded-full uppercase tracking-widest font-bold italic text-center">${text}</div>`;
+            } else {
+                wrapper.className = `flex ${sender === 'me' ? 'justify-end' : 'justify-start'} msg-pop`;
+                wrapper.innerHTML = `
+                    <div class="${sender === 'me' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-200 rounded-tl-none'} px-5 py-3 rounded-3xl shadow-xl max-w-[85%] mb-1">
+                        <p class="text-[14px] leading-relaxed">${text}</p>
+                        <span class="text-[9px] opacity-30 block mt-1 text-right font-mono">${time}</span>
+                    </div>`;
+            }
             container.appendChild(wrapper);
             container.scrollTop = container.scrollHeight;
         }
@@ -149,17 +173,22 @@
         });
 
         socket.on('display-typing', (isTyping) => {
-            document.getElementById('typingArea').innerText = isTyping ? "Participant typing..." : "";
+            document.getElementById('typingArea').innerText = isTyping ? "Encrypted data incoming..." : "";
         });
 
         socket.on('user-update', (data) => {
-            document.getElementById('userCount').innerText = `${data.count} ONLINE`;
+            document.getElementById('userCount').innerText = `${data.count} NODE(S) ACTIVE`;
         });
 
-        socket.on('force-logout', () => location.reload());
+        socket.on('force-logout', () => {
+            alert("BRIDGE DESTROYED: All memory has been purged.");
+            location.reload();
+        });
 
         function terminate() {
-            if(confirm("Destroy this bridge for everyone?")) socket.emit('end-session', currentRoom);
+            if(confirm("CONFIRM DESTRUCTION: Erase all history and keys for all members?")) {
+                socket.emit('end-session', currentRoom);
+            }
         }
     </script>
 </body>
