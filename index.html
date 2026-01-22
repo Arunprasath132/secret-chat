@@ -2,123 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL_BRIDGE_V1.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Secret Bridge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        /* OLD SCHOOL TERMINAL STYLING */
-        * { box-sizing: border-box; }
-        body { 
-            background-color: #000; 
-            color: #00ff00; 
-            font-family: "Courier New", Courier, monospace; 
-            margin: 0; 
-            height: 100vh; 
-            display: flex;
-            flex-direction: column;
-        }
-
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
         .hidden { display: none !important; }
-
-        /* HEADER */
-        header { 
-            border-bottom: 2px solid #00ff00; 
-            padding: 10px; 
-            display: flex; 
-            justify-content: space-between;
-            background: #000;
-        }
-
-        /* LOGIN BOX */
-        #loginSection {
-            margin: auto;
-            border: 2px solid #00ff00;
-            padding: 30px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        input {
-            background: #000;
-            border: 1px solid #00ff00;
-            color: #00ff00;
-            padding: 10px;
-            width: 100%;
-            margin-bottom: 10px;
-            outline: none;
-            font-family: inherit;
-        }
-
-        button {
-            background: #00ff00;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: inherit;
-            text-transform: uppercase;
-        }
-
-        button:hover { background: #00cc00; }
-
-        /* CHAT AREA */
-        #chatSection {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        #messages {
-            flex: 1;
-            overflow-y: scroll;
-            padding: 20px;
-            border-bottom: 2px solid #00ff00;
-        }
-
-        .msg { margin-bottom: 10px; line-height: 1.4; }
-        .system { color: #ffff00; font-style: italic; }
-        .time { color: #008800; font-size: 0.8em; margin-right: 10px; }
-        .user { font-weight: bold; color: #fff; margin-right: 5px; }
-
-        /* INPUT BAR */
-        .input-area {
-            display: flex;
-            padding: 10px;
-            background: #000;
-        }
-
-        #msgInput { flex: 1; margin-right: 10px; margin-bottom: 0; }
-
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #00ff00; }
+        #messages { height: calc(100vh - 160px); scroll-behavior: smooth; }
+        .btn-blue { background: #2563eb; transition: all 0.2s; }
+        .btn-blue:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .msg-animate { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
+<body class="h-screen flex items-center justify-center p-4">
 
-    <div id="loginSection">
-        <h2>[ BRIDGE_LOGIN ]</h2>
-        <p>IDENTIFY TUNNEL PARAMETERS:</p>
-        <input type="text" id="roomInput" placeholder="TUNNEL_ID">
-        <input type="password" id="passInput" placeholder="ACCESS_KEY">
-        <button onclick="connect()">Establish Link</button>
+    <div id="loginSection" class="w-full max-w-md glass p-8 rounded-3xl shadow-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black tracking-tighter text-white uppercase italic">Secret Bridge</h1>
+            <p class="text-slate-400 text-[10px] font-bold tracking-[0.3em] uppercase mt-2">Transient Tunnel</p>
+        </div>
+
+        <details class="mb-6 bg-black/20 rounded-xl overflow-hidden group">
+            <summary class="p-3 text-[10px] font-bold uppercase cursor-pointer list-none flex justify-between items-center text-blue-400">
+                Connection Instructions <span>↓</span>
+            </summary>
+            <div class="p-3 text-[10px] text-slate-300 border-t border-white/5 space-y-2">
+                <p>• <b>Bridge ID:</b> Create a unique name for your private room.</p>
+                <p>• <b>Persistence:</b> Messages stay in memory until the bridge is wiped.</p>
+                <p>• <b>Privacy:</b> No logs are stored on disk. RAM only.</p>
+            </div>
+        </details>
+        
+        <div class="space-y-4">
+            <input type="text" id="roomKey" placeholder="BRIDGE ID" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-sm outline-none focus:border-blue-500 transition-all font-mono uppercase tracking-widest text-center">
+            <input type="password" id="roomPass" placeholder="PASSWORD" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-sm outline-none focus:border-blue-500 transition-all text-center">
+            <button onclick="join()" class="w-full btn-blue py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg">Link Bridge</button>
+        </div>
     </div>
 
-    <div id="chatSection" class="hidden">
-        <header>
-            <div>STATUS: CONNECTED // ROOM: <span id="roomDisp"></span></div>
-            <button onclick="wipe()" style="background: #ff0000; color: #fff; padding: 2px 10px; font-size: 10px;">PURGE_ALL</button>
-        </header>
+    <div id="chatSection" class="hidden w-full max-w-4xl h-full flex flex-col glass rounded-3xl overflow-hidden shadow-2xl">
+        <div class="p-5 border-b border-white/10 flex justify-between items-center bg-white/5">
+            <div class="flex items-center space-x-3">
+                <div class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div>
+                <div>
+                    <h2 id="roomDisp" class="text-xs font-black uppercase tracking-widest text-white">Active</h2>
+                    <p id="countDisp" class="text-[9px] text-slate-500 font-bold">NODES: 0</p>
+                </div>
+            </div>
+            <button onclick="wipe()" class="px-4 py-2 bg-red-600/10 text-red-500 border border-red-500/20 rounded-full text-[9px] font-black uppercase hover:bg-red-600 hover:text-white transition-all">Wipe Tunnel</button>
+        </div>
 
-        <div id="messages"></div>
+        <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
 
-        <div class="input-area">
-            <span style="padding-top:10px; margin-right:5px;">></span>
-            <input type="text" id="msgInput" placeholder="ENTER_DATA..." onkeypress="if(event.key==='Enter') send()">
-            <button onclick="send()">SEND</button>
+        <div class="p-4 bg-slate-900/50">
+            <form onsubmit="event.preventDefault(); send();" class="flex items-center space-x-3 max-w-3xl mx-auto">
+                <input type="text" id="msgInput" autocomplete="off" placeholder="Type a message..." class="flex-1 bg-slate-800/50 border border-white/10 rounded-xl px-5 py-4 outline-none text-sm text-white focus:border-blue-500">
+                <button type="submit" class="btn-blue w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-xl">
+                    <svg class="w-5 h-5 fill-white rotate-90" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -126,61 +71,68 @@
         const socket = io();
         let currentRoom = "";
 
-        function connect() {
-            const r = document.getElementById('roomInput').value;
-            const p = document.getElementById('passInput').value;
-            if(r && p) {
-                currentRoom = r;
-                socket.emit('join-room', { key: r, password: p });
-            }
+        function join() {
+            const key = document.getElementById('roomKey').value.trim();
+            const pass = document.getElementById('roomPass').value.trim();
+            if(!key || !pass) return;
+            currentRoom = key;
+            socket.emit('join-room', { key, password: pass });
         }
 
         socket.on('login-success', () => {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('chatSection').classList.remove('hidden');
-            document.getElementById('roomDisp').innerText = currentRoom;
+            document.getElementById('roomDisp').innerText = "ID: " + currentRoom;
         });
 
         socket.on('load-history', (history) => {
-            history.forEach(d => append(d));
+            const container = document.getElementById('messages');
+            container.innerHTML = "";
+            history.forEach(msg => appendMsg(msg));
         });
 
         function send() {
-            const i = document.getElementById('msgInput');
-            if(i.value) {
-                socket.emit('send-message', { room: currentRoom, message: i.value });
-                i.value = "";
-            }
+            const input = document.getElementById('msgInput');
+            if(!input.value.trim()) return;
+            socket.emit('send-message', { room: currentRoom, message: input.value });
+            input.value = "";
         }
 
-        socket.on('receive-message', (data) => append(data));
+        socket.on('receive-message', (data) => appendMsg(data));
 
-        function append(d) {
-            const m = document.getElementById('messages');
-            const div = document.createElement('div');
-            div.className = 'msg';
+        function appendMsg(data) {
+            const container = document.getElementById('messages');
+            const wrap = document.createElement('div');
             
-            if(d.type === 'system') {
-                div.innerHTML = `<span class="system">${d.text}</span>`;
+            if(data.type === 'system') {
+                wrap.className = "flex justify-center my-2";
+                wrap.innerHTML = `<div class="bg-blue-500/10 text-blue-400 text-[8px] px-4 py-1.5 rounded-full font-black uppercase tracking-widest border border-blue-500/20 italic">${data.text}</div>`;
             } else {
-                const isMe = d.senderId === socket.id;
-                div.innerHTML = `
-                    <span class="time">[${d.time}]</span>
-                    <span class="user">${isMe ? '<YOU>' : '<NODE>'}</span>
-                    <span>${d.text}</span>
-                `;
+                const isMe = data.senderId === socket.id;
+                wrap.className = `flex ${isMe ? 'justify-end' : 'justify-start'} msg-animate`;
+                wrap.innerHTML = `
+                    <div class="${isMe ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-200'} px-4 py-3 rounded-2xl max-w-[85%] shadow-lg">
+                        <p class="text-sm leading-snug">${data.text}</p>
+                        <span class="text-[8px] opacity-30 block mt-1 text-right">${data.time}</span>
+                    </div>`;
             }
-            m.appendChild(div);
-            m.scrollTop = m.scrollHeight;
+            container.appendChild(wrap);
+            container.scrollTop = container.scrollHeight;
         }
+
+        socket.on('user-update', (data) => {
+            document.getElementById('countDisp').innerText = `NODES: ${data.count}`;
+        });
 
         socket.on('force-logout', () => {
-            alert("SESSION_TERMINATED: MEMORY_PURGED");
+            alert("Tunnel destroyed. Redirecting...");
             location.reload();
         });
 
         function wipe() {
-            if(confirm("EXECUTE GLOBAL PURGE?")) socket.emit('end-session', currentRoom);
+            if(confirm("DANGER: This will wipe all messages for all users. Proceed?")) {
+                socket.emit('end-session', currentRoom);
+            }
         }
     </script>
 </body>
