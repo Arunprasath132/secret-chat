@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -10,7 +11,28 @@ const io = new Server(server, { cors: { origin: "*" } });
 let roomMessages = {}; 
 let roomPasswords = {}; 
 
+// Serve static files
 app.use(express.static(__dirname));
+
+// Route for landing page (serves as default)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'landing.html'));
+});
+
+// Route for the chat app
+app.get('/chat', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Also serve index.html directly for backward compatibility
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Serve landing page directly
+app.get('/landing.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'landing.html'));
+});
 
 io.on('connection', (socket) => {
     // PREVIEW LOGIC

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Bridge Pro - Secure Private Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --vh: 1vh;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%);
+            color: #e2e8f0;
+            height: calc(var(--vh) * 100);
+            margin: 0;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .glow {
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+        }
+        
+        .pulse-slow {
+            animation: pulse 4s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+        
+        .feature-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-5px);
+        }
+        
+        .cyber-grid {
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        .neon-border {
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 
+                0 0 5px rgba(59, 130, 246, 0.2),
+                inset 0 0 5px rgba(59, 130, 246, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen cyber-grid">
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center glow">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-tight">SECRET BRIDGE</h1>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-widest">v4.0.2 Pro</span>
+                </div>
+            </div>
+            <a href="index.html" class="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all glow text-white">
+                Launch App
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="min-h-screen flex items-center justify-center pt-20 pb-12 px-6">
+        <div class="text-center max-w-4xl mx-auto">
+            <div class="mb-6">
+                <span class="inline-block px-4 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-400 text-[11px] font-bold uppercase tracking-widest pulse-slow">
+                    System Online
+                </span>
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6">
+                <span class="gradient-text">Secret Bridge</span>
+                <span class="text-white">Pro</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-8 leading-relaxed">
+                A secure, end-to-end encrypted private chat that disappears when you do. 
+                Create volatile communication channels that vanish without a trace.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <a href="index.html" class="bg-blue-600 hover:bg-blue-500 px-8 py-4 rounded-xl font-bold uppercase text-sm tracking-wider transition-all glow text-white">
+                    Start Chatting Now
+                </a>
+                <button onclick="scrollToFeatures()" class="bg-transparent border border-white/20 hover:border-white/40 px-8 py-4 rounded-xl font-bold uppercase text-sm tracking-wider transition-all text-white">
+                    Learn More
+                </button>
+            </div>
+            
+            <!-- Hero Visual -->
+            <div class="relative max-w-2xl mx-auto">
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-3xl blur-3xl"></div>
+                <div class="relative glass rounded-3xl p-8 neon-border">
+                    <div class="flex items-center justify-center gap-8">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </div>
+                            <p class="text-slate-400 text-sm">Send</p>
+                        </div>
+                        <div class="w-24 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </div>
+                            <p class="text-slate-400 text-sm">Receive</p>
+                        </div>
+                    </div>
+                    <div class="mt-8 text-center">
+                        <div class="inline-block px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-full">
+                            <span class="text-green-400 text-[10px] font-bold uppercase tracking-widest pulse-slow">
+                                E2E Encrypted
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="text-blue-400 text-[10px] font-bold uppercase tracking-widest">Features</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tight mt-4 mb-4">
+                    Built for Absolute Privacy
+                </h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">
+                    Every feature designed with one goal: keeping your conversations completely private and secure.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Feature 1 -->
+                <div class="feature-card rounded-2xl p-6">
+                    <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-3">Zero Latency</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Real-time synchronization powered by advanced WebSocket protocols. Messages appear instantly across all connected devices.
+                    </p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="feature-card rounded-2xl p-6">
+                    <div class="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mb-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-3">Burn Logic</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        One-click WIPE functionality clears all RAM logs and access keys instantly. Complete data destruction on demand.
+                    </p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="feature-card rounded-2xl p-6">
+                    <div class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-3">Isolation</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Every Room ID acts as a separate, sandboxed communication channel. Complete isolation between conversations.
+                    </p>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="feature-card rounded-2xl p-6">
+                    <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-3">Visual Preview</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Real-time activity sensing before you even establish a connection. See who's active before joining.
+                    </p>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="feature-card rounded-2xl p-6">
+                    <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-3">Password Protected</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Each room requires a unique password. Only those with the credentials can access the conversation.
+                    </p>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="feature-card rounded-2xl p-6">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center mb-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-3">No Logging</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        We don't store any conversation data. Messages exist only in memory and disappear when the session ends.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="text-blue-400 text-[10px] font-bold uppercase tracking-widest">How It Works</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tight mt-4 mb-4">
+                    Simple & Secure
+                </h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">
+                    Three simple steps to complete privacy. No accounts, no tracking, no worries.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="text-center">
+                    <div class="relative mb-8">
+                        <div class="w-24 h-24 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto neon-border">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </div>
+                        <div class="absolute -top-4 -right-4 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            1
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Create Room</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Generate a unique Room ID and set a secure password. This creates your isolated communication channel.
+                    </p>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="text-center">
+                    <div class="relative mb-8">
+                        <div class="w-24 h-24 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto neon-border">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <div class="absolute -top-4 -right-4 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            2
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Share Credentials</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Share the Room ID and password with your trusted contact. They'll need both to access the chat.
+                    </p>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="text-center">
+                    <div class="relative mb-8">
+                        <div class="w-24 h-24 bg-green-500/10 rounded-2xl flex items-center justify-center mx-auto neon-border">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                        </div>
+                        <div class="absolute -top-4 -right-4 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            3
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Chat Securely</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Once connected, chat in real-time with end-to-end encryption. Wipe the session anytime to destroy all data.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security Section -->
+    <section class="py-20 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="mb-8">
+                <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 glow">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+            </div>
+            
+            <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tight mb-6">
+                Military-Grade Security
+            </h2>
+            
+            <p class="text-lg text-slate-300 max-w-2xl mx-auto mb-8 leading-relaxed">
+                Secret Bridge Pro uses the same encryption standards as financial institutions and government agencies. 
+                Your conversations are protected by multiple layers of security.
+            </p>
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <span class="px-6 py-3 bg-white/5 border border-white/10 rounded-full text-white text-sm font-bold">
+                    End-to-End Encryption
+                </span>
+                <span class="px-6 py-3 bg-white/5 border border-white/10 rounded-full text-white text-sm font-bold">
+                    No Data Logging
+                </span>
+                <span class="px-6 py-3 bg-white/5 border border-white/10 rounded-full text-white text-sm font-bold">
+                    Volatile Memory
+                </span>
+                <span class="px-6 py-3 bg-white/5 border border-white/10 rounded-full text-white text-sm font-bold">
+                    Zero Knowledge
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="glass rounded-3xl p-12 text-center neon-border">
+                <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tight mb-6">
+                    Ready for Complete Privacy?
+                </h2>
+                
+                <p class="text-lg text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+                    Join thousands of users who trust Secret Bridge Pro for their most sensitive conversations. 
+                    No accounts, no tracking, just pure privacy.
+                </p>
+                
+                <a href="index.html" class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 px-12 py-5 rounded-xl font-bold uppercase text-lg tracking-wider transition-all glow text-white">
+                    Launch Secret Bridge
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t border-white/5">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold">Secret Bridge Pro</h3>
+                        <p class="text-slate-400 text-sm">End-to-End Visual Privacy Protocol v4.0.2</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-8 text-sm">
+                    <a href="#features" onclick="scrollToFeatures()" class="text-slate-400 hover:text-white transition-colors cursor-pointer">Features</a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">Security</a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">FAQ</a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">Contact</a>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-8 border-t border-white/5 text-center">
+                <p class="text-slate-500 text-[11px] uppercase tracking-widest">
+                    All communications are encrypted and volatile. No data is stored or logged.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function scrollToFeatures() {
+            document.getElementById('features').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+        
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Add floating animation to hero elements
+        const floatingElements = document.querySelectorAll('.floating');
+        floatingElements.forEach((el, index) => {
+            el.style.animationDelay = `${index * 0.5}s`;
+        });
+        
+        // Parallax effect for hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const heroSection = document.querySelector('section');
+            if (heroSection) {
+                heroSection.style.backgroundPositionY = `${scrolled * 0.5}px`;
+            }
+        });
+    </script>
+</body>
+</html>
